@@ -13,6 +13,7 @@
     "mongoose": "^5.3.14"
   },
   "scripts": {
-    "start": "node --experimental-modules main.mjs"
+    "start": "node --experimental-modules main.mjs",
+    "drop": "node --experimental-modules tools/drop.mjs"
   }
 }

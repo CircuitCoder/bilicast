@@ -5,6 +5,7 @@ export default mongoose.model('Entry', {
 
   title: String,
   source: String,
+  ref: String,
 
   dlTime: String, // ISO TS
   content: String, // Path
@@ -14,6 +15,17 @@ export default mongoose.model('Entry', {
     type: Boolean,
     default: false,
   },
+
+  status: {
+    type: String,
+    enum: [
+      'preparing',
+      'downloading',
+      'converting',
+      'ready',
+    ],
+    default: 'preparing',
+  }
 });
 
 // TODO: multiple versions

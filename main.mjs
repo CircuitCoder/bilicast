@@ -3,8 +3,12 @@ import path from 'path';
 import Koa from 'koa';
 import Helmet from 'koa-helmet';
 import Static from 'koa-static';
+import mongoose from 'mongoose';
 
 import router from './routes';
+
+const dburi = process.env.DBURI || 'mongodb://localhost/bilicast';
+mongoose.connect(dburi);
 
 const basedir = path.dirname(new URL(import.meta.url).pathname);
 
