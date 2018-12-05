@@ -1,11 +1,12 @@
 import Router from 'koa-router';
 
 import Entry from '../db/Entry';
+import logger from '../logger';
 
 const router = new Router();
 
 async function download(av, dbid) {
-  console.log(`Download from ${av}`);
+  logger.info(`Download from ${av}`);
 }
 
 router.get('/download/:av', async ctx => {
