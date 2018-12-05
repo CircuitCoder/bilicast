@@ -95,4 +95,8 @@ router.get('/download/:av', async ctx => {
   return ctx.body = { _id: entry._id };
 });
 
+router.get('/:id', async ctx => {
+  return ctx.body = await Entry.findById(ctx.params.id);
+});
+
 export default router;

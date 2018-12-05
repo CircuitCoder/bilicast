@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
 
 export default mongoose.model('Entry', {
-  _id: String,
-
   title: String,
   source: String,
   ref: String,
