@@ -4,6 +4,7 @@ import Koa from 'koa';
 import Helmet from 'koa-helmet';
 import Static from 'koa-static';
 import mongoose from 'mongoose';
+import Mount from 'koa-mount';
 
 import router from './routes';
 
@@ -17,7 +18,7 @@ const app = new Koa();
 app.use(Helmet());
 app.use(router.routes(), router.allowedMethods());
 app.use(Static(path.join(basedir, 'public')));
-app.use(Static(path.join(basedir, 'store')));
+app.use(Mount('/store', Static(path.join(basedir, 'store'))));
 
 const port = process.env.PORT || 8674;
 app.listen(port, () => {

@@ -1,16 +1,71 @@
 import Router from 'koa-router';
+import fs from 'fs';
+import crypto from 'crypto';
+import path from 'path';
+import { promisify } from 'util';
+
+const access = promisify(fs.access);
+const randomBytes = promisify(crypto.randomBytes);
 
 import Entry from '../db/Entry';
 import logger from '../logger';
 import * as util from '../util';
+
+const basedir = path.dirname(new URL(import.meta.url).pathname);
 
 const router = new Router();
 
 async function download(av, dbid) {
   logger.info(`Download from ${av}`);
   const desc = await util.getDesc(av);
-  logger.info('Desc: ');
-  logger.info(desc);
+  logger.debug(desc);
+
+  // Selecting best source
+  const source = Object.keys(desc.streams).reduce((acc, i) => {
+    if(desc.streams[i].container !== 'flv') return acc;
+    if(acc === null) return { format: i, ...desc.streams[i] };
+    if(desc.streams[i].size > acc.size) return { format: i, ...desc.streams[i] };
+    return acc;
+  }, null);
+
+  const container = path.resolve(basedir, `../store/${dbid}`);
+
+  Entry.findOneAndUpdate({
+    _id: dbid,
+  }, {
+    $set: {
+      status: 'downloading',
+      ref: desc.url,
+      title: desc.title,
+    },
+  }, {
+    runValidators: true,
+  });
+
+  await util.downloadTo(desc.url, source.format, container);
+
+  Entry.findOneAndUpdate({
+    _id: dbid,
+  }, {
+    $set: {
+      status: 'converting',
+    },
+  }, {
+    runValidators: true,
+  });
+
+  await util.convertMp4(container);
+  await util.convertM4a(container);
+
+  Entry.findOneAndUpdate({
+    _id: dbid,
+  }, {
+    $set: {
+      status: 'ready',
+    },
+  }, {
+    runValidators: true,
+  });
 }
 
 router.get('/download/:av', async ctx => {

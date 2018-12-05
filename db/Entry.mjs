@@ -8,8 +8,6 @@ export default mongoose.model('Entry', {
   ref: String,
 
   dlTime: String, // ISO TS
-  content: String, // Path
-  art: String, // Path
 
   inactive: {
     type: Boolean,
