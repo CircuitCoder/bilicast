@@ -1,6 +1,25 @@
 import { spawn } from 'child_process';
 
+import request from 'request-promise-native';
+
 import logger from './logger';
+
+export async function getDetail(av) {
+  const match = av.match(/^av(\d+)$/);
+  if(!match) throw new Error('Invalid AV format');
+
+  const aid = match[1];
+  const uri = `https://api.bilibili.com/x/web-interface/view/detail?aid=${aid}`;
+  logger.debug(`Getting detail from ${uri}`);
+
+  const json = await request({
+    uri,
+    json: true,
+  });
+
+  if(json.code !== 0) throw new Error(`Invalid response code: ${json.code}`);
+  return json.data;
+}
 
 export function getDesc(av) {
   const uri = `https://bilibili.com/video/${av}`;

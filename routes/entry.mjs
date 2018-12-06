@@ -3,8 +3,10 @@ import fs from 'fs';
 import crypto from 'crypto';
 import path from 'path';
 import { promisify } from 'util';
+import request from 'request';
 
 const access = promisify(fs.access);
+const mkdir = promisify(fs.mkdir);
 const randomBytes = promisify(crypto.randomBytes);
 
 import Entry from '../db/Entry';
@@ -16,7 +18,32 @@ const basedir = path.dirname(new URL(import.meta.url).pathname);
 const router = new Router();
 
 async function download(av, dbid) {
+  const container = path.resolve(basedir, `../store/${dbid}`);
+  await mkdir(container);
+
   logger.info(`Download from ${av}`);
+  const detail = await util.getDetail(av);
+  logger.debug(detail);
+
+  await new Promise(resolve => 
+    request(detail.View.pic)
+      .on('end', resolve)
+      .pipe(fs.createWriteStream(path.join(container, 'art.jpg'))) // TODO: other ext
+  );
+
+  await Entry.findOneAndUpdate({
+    _id: dbid,
+  }, {
+    $set: {
+      status: 'downloading',
+      uploader: detail.Card.card.name,
+      category: detail.View.tname,
+      title: detail.View.title,
+    },
+  }, {
+    runValidators: true,
+  });
+
   const desc = await util.getDesc(av);
   logger.debug(desc);
 
@@ -28,15 +55,11 @@ async function download(av, dbid) {
     return acc;
   }, null);
 
-  const container = path.resolve(basedir, `../store/${dbid}`);
-
-  Entry.findOneAndUpdate({
+  await Entry.findOneAndUpdate({
     _id: dbid,
   }, {
     $set: {
-      status: 'downloading',
       ref: desc.url,
-      title: desc.title,
     },
   }, {
     runValidators: true,
@@ -44,7 +67,7 @@ async function download(av, dbid) {
 
   await util.downloadTo(desc.url, source.format, container);
 
-  Entry.findOneAndUpdate({
+  await Entry.findOneAndUpdate({
     _id: dbid,
   }, {
     $set: {
@@ -57,7 +80,7 @@ async function download(av, dbid) {
   await util.convertMp4(container);
   await util.convertM4a(container);
 
-  Entry.findOneAndUpdate({
+  await Entry.findOneAndUpdate({
     _id: dbid,
   }, {
     $set: {

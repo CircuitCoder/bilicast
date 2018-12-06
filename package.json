@@ -12,10 +12,12 @@
     "koa-router": "^7.4.0",
     "koa-static": "^5.0.0",
     "mongoose": "^5.3.14",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.5",
     "winston": "^3.1.0"
   },
   "scripts": {
     "start": "node --experimental-modules main.mjs",
-    "drop": "rm -r store/* && node --experimental-modules tools/drop.mjs"
+    "drop": "rm -rf store/* && node --experimental-modules tools/drop.mjs"
   }
 }

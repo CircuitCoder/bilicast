@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 
 export default mongoose.model('Entry', {
   title: String,
+  uploader: String,
+  category: String,
   source: String,
   ref: String,
 
