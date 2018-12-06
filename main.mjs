@@ -17,7 +17,7 @@ const app = new Koa();
 
 app.use(Helmet());
 app.use(router.routes(), router.allowedMethods());
-app.use(Static(path.join(basedir, 'public')));
+app.use(Static(path.join(basedir, 'frontend', 'build')));
 app.use(Mount('/store', Static(path.join(basedir, 'store'))));
 
 const port = process.env.PORT || 8674;
