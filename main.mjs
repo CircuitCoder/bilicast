@@ -10,7 +10,7 @@ import Bodyparser from 'koa-bodyparser';
 import router from './routes';
 
 const dburi = process.env.DBURI || 'mongodb://localhost/bilicast';
-mongoose.connect(dburi);
+mongoose.connect(dburi, { useNewUrlParser: true });
 
 const basedir = path.dirname(new URL(import.meta.url).pathname);
 
