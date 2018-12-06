@@ -2,7 +2,12 @@ import React from 'react';
 
 import { connect } from 'react-redux';
 
-import { BrowserRouter as Router, Route, NavLink, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+
+import {
+  Home,
+  New,
+} from './routes';
 
 const mapS2P = state => ({
   list: state.list,
@@ -11,6 +16,11 @@ const mapS2P = state => ({
 
 const Root = ({ list, entry }) => (
   <Router>
+    <Switch>
+      <Route exact path="/" component={Home} />
+      <Route exact path="/new" component={New} />
+      <Route exact path="/:id" component={Home} />
+    </Switch>
   </Router>
 )
 
