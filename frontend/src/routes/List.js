@@ -9,7 +9,11 @@ class EntryImpl extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    if(!props.entry) this.props.reload();
+    if(!this.props.entry) this.props.reload();
+  }
+
+  render() {
+    return <div>{ JSON.stringify(this.props.entry) }</div>
   }
 }
 
@@ -58,11 +62,7 @@ class List extends React.PureComponent {
       <div className="list-name">{ list.name }</div>
       <button onClick={() => this.handleAdd()}>Add</button>
       <div className="entries">
-        { list.entries.map(e =>
-          <div className="entry">
-            {JSON.stringify(e)}
-          </div>
-        )}
+        { list.entries.map(e => <Entry className="entry" id={e} />)}
         { list.entries.length === 0 ?
           <div className="entry-empty">Empty</div>
           : null }
