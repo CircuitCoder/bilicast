@@ -506,6 +506,11 @@ ienoopen@1.0.0:
   resolved "http://registry.npm.taobao.org/ienoopen/download/ienoopen-1.0.0.tgz#346a428f474aac8f50cf3784ea2d0f16f62bda6b"
   integrity sha1-NGpCj0dKrI9QzzeE6i0PFvYr2ms=
 
+immutable@^4.0.0-rc.12:
+  version "4.0.0-rc.12"
+  resolved "http://registry.npm.taobao.org/immutable/download/immutable-4.0.0-rc.12.tgz#ca59a7e4c19ae8d9bf74a97bdf0f6e2f2a5d0217"
+  integrity sha1-ylmn5MGa6Nm/dKl73w9uLypdAhc=
+
 inflation@^2.0.0:
   version "2.0.0"
   resolved "http://registry.npm.taobao.org/inflation/download/inflation-2.0.0.tgz#8b417e47c28f925a45133d914ca1fd389107f30f"

@@ -1,6 +1,26 @@
 import React from 'react';
 
-import { get } from '../util';
+import { connect } from 'react-redux';
+
+import { get, post } from '../util';
+import { fetchEntry } from '../store/actions';
+
+class EntryImpl extends React.PureComponent {
+  constructor(props) {
+    super(props);
+
+    if(!props.entry) this.props.reload();
+  }
+}
+
+const Entry = connect(
+  (state, props) => ({
+    entry: state.store.get(props.id),
+  }),
+  (dispatch, props) => ({
+    reload: () => dispatch(fetchEntry(props.id)),
+  }),
+)(EntryImpl);
 
 class List extends React.PureComponent {
   state = {
@@ -14,11 +34,19 @@ class List extends React.PureComponent {
   }
 
   async reloadList() {
-    this.setState({ list: null });
-
     const list = await get(`/list/${this.props.match.params.id}`);
 
     this.setState({ list });
+  }
+
+  async handleAdd() {
+    const adding = prompt("AV?");
+
+    const { _id: eid } = await get(`/entry/download/${adding}`);
+    console.log(eid);
+
+    await post(`/list/${this.props.match.params.id}/entries`, [eid]);
+    return this.reloadList();
   }
 
   render() {
@@ -28,6 +56,7 @@ class List extends React.PureComponent {
 
     return <div className="list">
       <div className="list-name">{ list.name }</div>
+      <button onClick={() => this.handleAdd()}>Add</button>
       <div className="entries">
         { list.entries.map(e =>
           <div className="entry">
