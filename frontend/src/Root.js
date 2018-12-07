@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import {
   Home,
   New,
+  List,
 } from './routes';
 
 const mapS2P = state => ({
@@ -19,7 +20,7 @@ const Root = ({ list, entry }) => (
     <Switch>
       <Route exact path="/" component={Home} />
       <Route exact path="/new" component={New} />
-      <Route exact path="/:id" component={Home} />
+      <Route exact path="/:id" component={List} />
     </Switch>
   </Router>
 )

@@ -12,6 +12,10 @@ router.post('/', async ctx => {
   ctx.body = list.toObject();
 });
 
+router.get('/:id', async ctx => {
+  return ctx.body = await List.findById(ctx.params.id).lean();
+});
+
 router.post('/:id/entries', async ctx => {
   const resp = await List.findOneAndUpdate({
     _id: ctx.params.id,
