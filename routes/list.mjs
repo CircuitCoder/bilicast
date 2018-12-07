@@ -33,3 +33,5 @@ router.delete('/:id/entries/:eid', async ctx => {
   if(resp) return ctx.status = 204;
   else return ctx.status = 404;
 });
+
+export default router;

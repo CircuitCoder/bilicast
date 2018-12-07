@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
+
+import { post } from '../util';
 
 class New extends React.PureComponent {
   state = {
@@ -14,9 +16,15 @@ class New extends React.PureComponent {
           value={this.state.title}
           onChange={ev => this.setState({ title: ev.target.value })}
         />
+        <button onClick={() => this.handleNew()}>Create</button>
       </div>
     );
   }
+
+  async handleNew() {
+    const resp = await post('/list', { name: this.state.title });
+    this.props.history.push(`/${resp._id}`);
+  }
 };
 
-export default New;
+export default withRouter(New);
