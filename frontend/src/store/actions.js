@@ -13,6 +13,8 @@ export const cacheEntry = entry => ({
 
 // Async actions
 const fetchQueue = new Set();
+let polling = false;
+
 export const fetchEntry = eid =>
   async dispatch => {
     if(fetchQueue.has(eid)) return;
@@ -21,4 +23,25 @@ export const fetchEntry = eid =>
     const entry = await get(`/entry/${eid}`);
     dispatch(cacheEntry(entry));
     fetchQueue.delete(eid);
+
+    if(!polling)
+      dispatch(pollEntry());
   };
+
+const pollEntry = () =>
+  async (dispatch, getState) => {
+    polling = true;
+    const keys = Array.from(getState()
+      .store
+      .filter(e => e.status !== 'ready')
+      .keys())
+
+    if(keys.length === 0) {
+      polling = false;
+      return;
+    }
+
+    const promises = keys.map(e => dispatch(fetchEntry(e)));
+    await Promise.all(promises);
+    setTimeout(() => dispatch(pollEntry()), 1000);
+  }
