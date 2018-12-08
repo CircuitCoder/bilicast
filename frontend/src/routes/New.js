@@ -19,7 +19,7 @@ class New extends React.PureComponent {
           Create Playlist
         </div>
 
-        <div class="input-hint">Title</div>
+        <div className="input-hint">Title</div>
         <input
           value={this.state.title}
           onChange={ev => this.setState({ title: ev.target.value })}
