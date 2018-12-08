@@ -121,7 +121,11 @@ class List extends React.PureComponent {
   playList() {
     if(this.props.isPlaying) // No-op, don't play the first track to mess everyone up
       return;
-    this.playEntry(0);
+    const index = this.state.list.entries.findIndex(e => e === this.props.playingId);
+    if(index !== -1)
+      this.playEntry(index);
+    else
+      this.playEntry(0);
   }
 
   render() {
@@ -176,6 +180,7 @@ class List extends React.PureComponent {
 const mapS2P = (state, props) => ({
   isPlaying: state.playing && state.playing.list._id === props.match.params.id,
   playingIndex: state.playing && state.playing.index,
+  playingId: state.playing && state.playing.list.entries[state.playing.index],
   store: state.store,
 });
 
