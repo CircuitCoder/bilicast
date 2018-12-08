@@ -39,6 +39,8 @@ export const fetchEntry = eid =>
 
     if(!polling)
       dispatch(pollEntry());
+
+    return entry;
   };
 
 const pollEntry = () =>

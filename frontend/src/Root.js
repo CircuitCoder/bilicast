@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import { BrowserRouter as Router, Route, Switch, NavLink } from 'react-router-dom';
 
-import { setRepeat, playEntry } from './store/actions';
+import { setRepeat, playEntry, fetchEntry } from './store/actions';
 
 import { artwork, music } from './util';
 
@@ -29,18 +29,23 @@ function findPrev({ playing: { list: { entries }, index }, repeating }) {
   else return index - 1;
 }
 
-const mapS2P = state => ({
-  playing: state.playing,
-  playingEntry: state.playing ? state.playing.list.entries[state.playing.index] : null,
-  repeating: state.repeating,
+const mapS2P = state => {
+  const playingEntry = state.playing ? state.playing.list.entries[state.playing.index] : null;
+  return {
+    playing: state.playing,
+    playingEntry,
+    playingEntryInst: playingEntry ? state.store.get(playingEntry) : null,
+    repeating: state.repeating,
 
-  next: state.playing ? findNext(state) : null,
-  prev: state.playing ? findPrev(state) : null,
-});
+    next: state.playing ? findNext(state) : null,
+    prev: state.playing ? findPrev(state) : null,
+  };
+};
 
 const mapD2P = dispatch => ({
   setRepeat: repeat => dispatch(setRepeat(repeat)),
   playEntry: (list, index) => dispatch(playEntry(list, index)),
+  fetchEntry: id => dispatch(fetchEntry(id)),
 });
 
 class Root extends React.PureComponent {
@@ -85,6 +90,14 @@ class Root extends React.PureComponent {
     const audio = this.audio.current;
 
     const entry = this.props.playingEntry;
+
+    let inst = this.props.playingEntryInst;
+    if(!inst || inst.status !== 'ready') {
+      this.next();
+      return;
+      // Looping around is highly unprobably, because we've already blocked list play when no entry is known to be ready
+      // and non-ready entries can't be played directly either
+    }
 
     audio.src = music(this.props.playingEntry);
     await audio.load()
