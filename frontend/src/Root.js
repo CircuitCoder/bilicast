@@ -84,10 +84,13 @@ class Root extends React.PureComponent {
   async newTrack() {
     const audio = this.audio.current;
 
+    const entry = this.props.playingEntry;
+
     audio.src = music(this.props.playingEntry);
     await audio.load()
-    // TODO: check if the track has changed
     // TODO: setup media notification
+
+    if(this.props.playingEntry !== entry) return;
 
     this.setState({ progress: 0 });
     audio.play();
