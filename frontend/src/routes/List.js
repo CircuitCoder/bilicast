@@ -44,7 +44,7 @@ class EntryImpl extends React.PureComponent {
         <div className="entry-author">{ entry.uploader }</div>
         { entry.ref ?
             <a href={entry.ref} target="_blank"><div className="entry-hint entry-hint-clickable">
-                { entry.source } - { entry.category }
+                { entry.source } - P{entry.page} - { entry.category }
             </div></a>
             :
             <div className="entry-hint">
@@ -76,7 +76,7 @@ function parseTarget(target) {
   if(target.match(/^av\d+/))
     return target;
 
-  const re = /^https?:\/\/(www\.)?bilibili.com\/video\/(av\d+)(\?.*)?$/;
+  const re = /^https?:\/\/(www\.)?bilibili.com\/video\/(av\d+)\/?(\?.*)?$/;
   const match = target.match(re);
 
   if(match) return match[2];
@@ -90,6 +90,7 @@ class List extends React.PureComponent {
     importing: false,
 
     addTarget: '',
+    addWorking: false,
   }
 
   constructor(props) {
@@ -111,12 +112,18 @@ class List extends React.PureComponent {
   }
 
   async handleAdd() {
-    this.setState({ adding: false });
+    this.setState({ addWorking: true });
     const target = parseTarget(this.state.addTarget);
-    if(!target) alert('Meow, check your input.');
+    if(!target) {
+      alert('Meow, check your input.');
+      this.setState({ addWorking: false });
+      return;
+    }
 
-    const { _id: eid } = await get(`/entry/download/${target}`);
-    await post(`/list/${this.props.match.params.id}/entries`, [eid]);
+    const ids = await get(`/entry/download/${target}`);
+    await post(`/list/${this.props.match.params.id}/entries`, ids);
+
+    this.setState({ adding: false, addWorking: false });
     return this.reloadList();
   }
 
@@ -136,7 +143,7 @@ class List extends React.PureComponent {
 
   render() {
     const { isPlaying, playingIndex, store } = this.props;
-    const { list, adding, importing, addTarget } = this.state;
+    const { list, adding, importing, addTarget, addWorking } = this.state;
 
     if(list === null)
       return <div className="loading"></div>;
@@ -176,7 +183,7 @@ class List extends React.PureComponent {
         />
 
         <div className="dialog-actions">
-          <button onClick={() => this.handleAdd()}>Add</button>
+          <button onClick={() => this.handleAdd()} disabled={addWorking}>{ addWorking ? 'Working...' : 'Add'}</button>
         </div>
       </Dialog>
     </div>;

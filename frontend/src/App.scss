@@ -93,10 +93,15 @@ button {
   font-variant: small-caps;
   font-weight: bold;
 
-  transition: background-color .2s ease;
+  transition: background-color .2s ease, box-shadow .2s ease;
 
   &:hover {
     background-color: darken($primary, 10%);
+  }
+
+  &:disabled {
+    box-shadow: none;
+    background-color: lighten(grayscale($primary), 20%);
   }
 }
 
