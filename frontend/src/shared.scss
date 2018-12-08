@@ -22,4 +22,11 @@
       opacity: 1;
     }
   }
+
+  &.disabled {
+    cursor: default;
+    &:hover {
+      opacity: .38;
+    }
+  }
 }

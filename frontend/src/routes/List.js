@@ -20,13 +20,17 @@ class EntryImpl extends React.PureComponent {
   render() {
     const { entry } = this.props;
 
+    let className = 'entry';
+    if(this.props.className) className += ' ' + this.props.className;
+    if(!entry || entry.status !== 'ready') className += ' ' + 'entry-not-ready';
+
     if(!entry) return (
-      <div className={this.props.className}>
+      <div className={className}>
         <div className="loading"></div>
       </div>
     );
 
-    return <div className={this.props.className}>
+    return <div className={className}>
       <div className="entry-artwork">
         { entry.status !== 'preparing' ?
             <div style={{backgroundImage: `url(${artwork(entry._id)})`}} className="entry-artwork-internal" />
@@ -50,7 +54,11 @@ class EntryImpl extends React.PureComponent {
         }
       </div>
       <div className="entry-actions">
-        <Icon className="primary">play_arrow</Icon>
+        { entry.status === 'ready' ?
+            <Icon className="primary">play_arrow</Icon>
+            :
+            <Icon className="disabled rotate">sync</Icon>
+        }
       </div>
     </div>
   }
@@ -123,7 +131,7 @@ class List extends React.PureComponent {
         </div>
       </div>
       <div className="entries">
-        { list.entries.map(e => <Entry key={e} className="entry" id={e} />)}
+        { list.entries.map(e => <Entry key={e} id={e} />)}
         { list.entries.length === 0 ?
             <div className="list-empty" onClick={() => this.setState({ adding: true })}>
               <Icon>add</Icon>

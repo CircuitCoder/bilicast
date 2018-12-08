@@ -73,6 +73,8 @@
     box-shadow: rgba(0,0,0,.3) 0 2px 6px;
     border-left: grayscale($primary) 5px solid;
 
+    margin-bottom: 10px;
+
     transition: border-left-color .2s ease;
 
     overflow: hidden;
@@ -120,6 +122,7 @@
 
     .entry-artwork {
       width: 140px;
+      transition: filter .5s ease;
     }
 
     .entry-artwork-internal {
@@ -134,6 +137,12 @@
 
       .material-icons {
         @extend %action-icon;
+      }
+    }
+
+    &.entry-not-ready {
+      .entry-artwork {
+        filter: grayscale(1);
       }
     }
   }
