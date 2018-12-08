@@ -8,6 +8,7 @@ import { get, post, artwork } from '../util';
 import { fetchEntry } from '../store/actions';
 
 import Icon from '../Icon';
+import Dialog from '../Dialog';
 
 class EntryImpl extends React.PureComponent {
   constructor(props) {
@@ -17,7 +18,8 @@ class EntryImpl extends React.PureComponent {
   }
 
   render() {
-    const entry = this.props.entry;
+    const { entry } = this.props;
+
     if(!entry) return (
       <div className={this.props.className}>
         <div className="loading"></div>
@@ -63,9 +65,24 @@ const Entry = connect(
   }),
 )(EntryImpl);
 
+function parseTarget(target) {
+  if(target.match(/^av\d+/))
+    return target;
+
+  const re = /^https?:\/\/(www\.)?bilibili.com\/video\/(av\d+)(\?.*)?$/;
+  const match = target.match(re);
+
+  if(match) return match[2];
+  return null;
+}
+
 class List extends React.PureComponent {
   state = {
     list: null,
+    adding: false,
+    importing: false,
+
+    addTarget: '',
   }
 
   constructor(props) {
@@ -81,17 +98,17 @@ class List extends React.PureComponent {
   }
 
   async handleAdd() {
-    const adding = prompt("AV?");
+    this.setState({ adding: false });
+    const target = parseTarget(this.state.addTarget);
+    if(!target) alert('Meow, check your input.');
 
-    const { _id: eid } = await get(`/entry/download/${adding}`);
-    console.log(eid);
-
+    const { _id: eid } = await get(`/entry/download/${target}`);
     await post(`/list/${this.props.match.params.id}/entries`, [eid]);
     return this.reloadList();
   }
 
   render() {
-    const { list } = this.state;
+    const { list, adding, importing, addTarget } = this.state;
     if(list === null)
       return <div className="loading"></div>;
 
@@ -100,7 +117,7 @@ class List extends React.PureComponent {
         <Icon>queue_music</Icon>
         { list.name }
         <div className="actions">
-          <Icon onClick={() => this.handleAdd()}>add</Icon>
+          <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
           <Icon>list</Icon>
           <Icon className="primary">play_arrow</Icon>
         </div>
@@ -108,12 +125,30 @@ class List extends React.PureComponent {
       <div className="entries">
         { list.entries.map(e => <Entry key={e} className="entry" id={e} />)}
         { list.entries.length === 0 ?
-            <div className="list-empty" onClick={() => this.handleAdd()}>
+            <div className="list-empty" onClick={() => this.setState({ adding: true })}>
               <Icon>add</Icon>
               Add Entry
             </div>
             : null }
       </div>
+
+      <Dialog open={adding} onClose={() => this.setState({ adding: false })}>
+        <div className="dialog-title">
+          <Icon>add</Icon>
+          Add Entry
+        </div>
+
+        <div className="input-hint">AV Number or URL</div>
+        <input
+          placeholder="av1234 or https://bilibili.com/video/av1234"
+          value={addTarget}
+          onChange={ev => this.setState({ addTarget: ev.target.value })}
+        />
+
+        <div className="dialog-actions">
+          <button onClick={() => this.handleAdd()}>Add</button>
+        </div>
+      </Dialog>
     </div>;
   }
 };

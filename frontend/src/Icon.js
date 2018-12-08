@@ -1,5 +1,5 @@
 import React from 'react';
 
-export default function({ children, className }) {
-  return <i className={(className || '') + ' material-icons'}>{ children }</i>
+export default function({ children, className, ...props }) {
+  return <i className={(className || '') + ' material-icons'} {...props}>{ children }</i>
 }
