@@ -63,6 +63,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
+
+      .material-icons {
+        @extend %action-icon;
+        margin: 0 5px;
+        font-size: 32px;
+      }
+
+      .spacer {
+        width: 20px;
+      }
     }
   }
 }

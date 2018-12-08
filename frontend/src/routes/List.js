@@ -135,7 +135,7 @@ class List extends React.PureComponent {
         { list.name }
         <div className="actions">
           <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
-          <Icon>list</Icon>
+          <Icon>subscriptions</Icon>
           { list.entries.length > 0 ? <Icon className="primary" onClick={() => this.playList()}>play_arrow</Icon> : null }
         </div>
       </div>
