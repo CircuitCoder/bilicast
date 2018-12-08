@@ -168,7 +168,7 @@
 .list {
   .list-empty {
     @extend %splash;
-    height: calc(100vh - #{$bottom-height} - 40px - 40px);
+    height: calc(100vh - #{$bottom-height} - 40px - 60px);
     cursor: pointer;
   }
 

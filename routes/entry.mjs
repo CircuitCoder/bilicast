@@ -17,7 +17,42 @@ const basedir = path.dirname(new URL(import.meta.url).pathname);
 
 const router = new Router();
 
-async function download(av, dbid) {
+async function createEntries(av) {
+  const descs = await util.getDesc(av);
+  const results = await Promise.all(descs.map((e, i) =>
+    Entry.findOneAndUpdate({
+      source: av,
+      page: i+1,
+    }, {
+      $setOnInsert: {
+        dlTime: new Date().toISOString(),
+        status: 'preparing',
+        title: e.title,
+        ref: e.url,
+      },
+    }, {
+      new: true,
+      runValidators: true,
+      setDefaultsOnInsert: true,
+      upsert: true,
+      rawResult: true,
+    })
+  ));
+
+  return results.map((result, i) => {
+    if(!result.ok) throw result.lastErrorObject;
+    const upserted = !!result.lastErrorObject.upserted;
+    const entry = result.value;
+
+    return {
+      upserted,
+      entry,
+      desc: descs[i],
+    };
+  });
+}
+
+async function download(av, dbid, desc) {
   const container = path.resolve(basedir, `../store/${dbid}`);
   await mkdir(container);
 
@@ -38,14 +73,10 @@ async function download(av, dbid) {
       status: 'downloading',
       uploader: detail.Card.card.name,
       category: detail.View.tname,
-      title: detail.View.title,
     },
   }, {
     runValidators: true,
   });
-
-  const desc = await util.getDesc(av);
-  logger.debug(desc);
 
   // Selecting best source
   const source = Object.keys(desc.streams).reduce((acc, i) => {
@@ -92,30 +123,14 @@ async function download(av, dbid) {
 }
 
 router.get('/download/:av', async ctx => {
-  const result = await Entry.findOneAndUpdate({
-    source: ctx.params.av,
-  }, {
-    $setOnInsert: {
-      dlTime: new Date().toISOString(),
-      status: 'preparing',
-    },
-  }, {
-    new: true,
-    runValidators: true,
-    setDefaultsOnInsert: true,
-    upsert: true,
-    rawResult: true,
-  });
-
-  if(!result.ok) throw result.lastErrorObject;
-  const upserted = !!result.lastErrorObject.upserted;
-  const entry = result.value;
+  const handles = await createEntries(ctx.params.av);
 
   // Fire and forget
-  if(upserted)
-    download(ctx.params.av, entry._id);
+  for(const { upserted, entry, desc } of handles)
+    if(upserted)
+      download(ctx.params.av, entry._id, desc);
 
-  return ctx.body = { _id: entry._id };
+  return ctx.body = handles.map(e => e.entry._id);
 });
 
 router.get('/:id', async ctx => {

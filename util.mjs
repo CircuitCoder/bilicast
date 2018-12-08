@@ -24,7 +24,7 @@ export async function getDetail(av) {
 export function getDesc(av) {
   const uri = `https://bilibili.com/video/${av}`;
   logger.debug(`Getting desc from ${uri}`);
-  const child = spawn('you-get', ['--json', uri]);
+  const child = spawn('you-get', ['--json', '--playlist', uri]);
   let stdout = '';
   let stderr = '';
 
@@ -43,7 +43,11 @@ export function getDesc(av) {
         logger.debug(`Stderr: ${stderr}`);
         logger.debug(`Stdout: ${stdout}`);
       }
-      if(code === 0) return resolve(JSON.parse(stdout));
+      if(code === 0) {
+        let groups =
+          stdout.split('\n}').filter(e => e.trim() !== '').map(e => e + '\n}').map(JSON.parse);
+        return resolve(groups);
+      }
       else return reject(stderr);
     });
   });

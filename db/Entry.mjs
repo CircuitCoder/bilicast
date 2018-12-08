@@ -4,7 +4,9 @@ export default mongoose.model('Entry', {
   title: String,
   uploader: String,
   category: String,
+
   source: String,
+  page: Number,
   ref: String,
 
   dlTime: String, // ISO TS
