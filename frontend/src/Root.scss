@@ -52,14 +52,59 @@
     display: flex;
     flex: 1;
 
-    .bottom-artwork {
+    .artwork {
       width: 140px;
       background-size: cover;
     }
 
-    .control {
-      flex: 1;
+    .info {
+      width: 180px;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding: 10px 20px;
+      padding-right: 0;
+      margin-right: 100px;
 
+      @media (max-width: $threshold + 100px) {
+        & {
+          margin-right: 0;
+        }
+      }
+
+      @media (max-width: $threshold) {
+        & {
+          display: none;
+        }
+      }
+
+      > * {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .playing-title {
+        font-size: 18px;
+        line-height: 25px;
+        color: rgba(0,0,0,.87);
+      }
+
+      .playing-author {
+        font-size: 14px;
+        line-height: 20px;
+        margin-bottom: 15px;
+        color: rgba(0,0,0,.7);
+      }
+
+      .playing-list {
+        font-size: 14px;
+        line-height: 20px;
+        color: rgba(0,0,0,.38);
+      }
+    }
+
+    .control {
+      padding: 10px 20px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -73,6 +118,19 @@
       .spacer {
         width: 20px;
       }
+    }
+  }
+
+  .spanner {
+    flex: 1;
+  }
+
+  .actions {
+    padding: 10px 20px;
+    padding-left: 0;
+
+    .material-icons {
+      @extend %action-icon;
     }
   }
 }

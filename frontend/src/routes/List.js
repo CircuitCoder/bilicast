@@ -138,7 +138,7 @@ class List extends React.PureComponent {
         <div className="actions">
           <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
           <Icon>subscriptions</Icon>
-          { list.entries.map(e => store.get(e)).find(e => e && e.status === 'ready') !== null ?
+          { list.entries.map(e => store.get(e)).find(e => e && e.status === 'ready') !== undefined ?
               <Icon className="primary" onClick={() => this.playList()}>play_arrow</Icon> : null }
         </div>
       </div>

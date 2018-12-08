@@ -127,7 +127,7 @@ class Root extends React.PureComponent {
   }
 
   render() {
-    const { playing, repeating, setRepeat, playingEntry, prev, next } = this.props;
+    const { playing, repeating, setRepeat, playingEntry, playingEntryInst, prev, next } = this.props;
     const { progress, paused } = this.state;
 
     return (
@@ -143,7 +143,12 @@ class Root extends React.PureComponent {
           <nav className="bottom">
             { playing ? 
                 <div className="playing">
-                  <div className="bottom-artwork" style={{backgroundImage: `url(${artwork(playingEntry)})`}}></div>
+                  <div className="artwork" style={{backgroundImage: `url(${artwork(playingEntry)})`}}></div>
+                  <div className="info">
+                    <div className="playing-title">{ playingEntryInst ? playingEntryInst.title : '' }</div>
+                    <div className="playing-author">{ playingEntryInst ? playingEntryInst.uploader : '' }</div>
+                    <div className="playing-list">{ playing.list.name }</div>
+                  </div>
                   <div className="control">
                     <Icon onClick={() => this.prev()} className={prev === null ? 'disabled' : ''}>skip_previous</Icon>
                     { paused ? 
@@ -165,7 +170,11 @@ class Root extends React.PureComponent {
               }}>
               </div>
             </div>
+            <div className="spanner"></div>
             <div className="actions">
+              <NavLink to="/new">
+                <Icon>playlist_add</Icon>
+              </NavLink>
             </div>
 
             <div className="audio">
