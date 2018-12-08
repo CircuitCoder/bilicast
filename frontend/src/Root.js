@@ -158,6 +158,7 @@ class Root extends React.PureComponent {
                 onTimeUpdate={() => this.updateProgress()}
                 onPause={() => this.setState({ paused: true })}
                 onPlay={() => this.setState({ paused: false })}
+                onEnded={() => this.next()}
               />
             </div>
           </nav>
