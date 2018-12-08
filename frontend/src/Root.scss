@@ -112,6 +112,10 @@
       color: rgba(0,0,0,.38);
       overflow: hidden;
       text-overflow: ellipsis;
+
+      &.entry-hint-clickable {
+        text-decoration: underline;
+      }
     }
 
     .entry-artwork {

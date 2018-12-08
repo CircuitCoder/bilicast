@@ -37,10 +37,17 @@ class EntryImpl extends React.PureComponent {
       <div className="entry-info">
         <div className="entry-title">{ entry.title }</div>
         <div className="entry-author">{ entry.uploader }</div>
-        <div className="entry-hint">{ entry.source } - { entry.category }</div>
+        { entry.ref ?
+            <a href={entry.ref} target="_blank"><div className="entry-hint entry-hint-clickable">
+                { entry.source } - { entry.category }
+            </div></a>
+            :
+            <div className="entry-hint">
+              { entry.source } - { entry.category }
+            </div>
+        }
       </div>
       <div className="entry-actions">
-        { entry.ref ? <a href={entry.ref} target="_blank"><Icon>open_in_browser</Icon></a> : null }
         <Icon className="primary">play_arrow</Icon>
       </div>
     </div>
