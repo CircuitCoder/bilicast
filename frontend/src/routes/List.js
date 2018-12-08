@@ -98,7 +98,13 @@ class List extends React.PureComponent {
     this.reloadList();
   }
 
+  componentDidUpdate(pp) {
+    if(pp.match.params.id !== this.props.match.params.id)
+      this.reloadList();
+  }
+
   async reloadList() {
+    this.setState({ list: null });
     const list = await get(`/list/${this.props.match.params.id}`);
 
     this.setState({ list });
