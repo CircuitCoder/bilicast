@@ -16,11 +16,12 @@ class EntryImpl extends React.PureComponent {
   }
 
   render() {
-    const { entry, onPlay } = this.props;
+    const { entry, onPlay, isActive } = this.props;
 
     let className = 'entry';
     if(this.props.className) className += ' ' + this.props.className;
-    if(!entry || entry.status !== 'ready') className += ' ' + 'entry-not-ready';
+    if(!entry || entry.status !== 'ready') className += ' entry-not-ready';
+    if(isActive) className += ' active';
 
     if(!entry) return (
       <div className={className}>
@@ -122,7 +123,9 @@ class List extends React.PureComponent {
   }
 
   render() {
+    const { isPlaying, playingEntry } = this.props;
     const { list, adding, importing, addTarget } = this.state;
+
     if(list === null)
       return <div className="loading"></div>;
 
@@ -137,7 +140,7 @@ class List extends React.PureComponent {
         </div>
       </div>
       <div className="entries">
-        { list.entries.map(e => <Entry key={e} id={e} onPlay={() => this.playEntry(e)} />)}
+        { list.entries.map(e => <Entry key={e} id={e} onPlay={() => this.playEntry(e)} isActive={isPlaying && playingEntry === e} />)}
         { list.entries.length === 0 ?
             <div className="list-empty" onClick={() => this.setState({ adding: true })}>
               <Icon>add</Icon>
@@ -167,7 +170,11 @@ class List extends React.PureComponent {
   }
 };
 
-const mapS2P = null;
+const mapS2P = (state, props) => ({
+  isPlaying: state.playing && state.playing.list._id === props.match.params.id,
+  playingEntry: state.playing && state.playing.entry,
+});
+
 const mapD2P = (dispatch, props) => ({
   play: (id, list) => dispatch(playEntry(id, list)),
 });
