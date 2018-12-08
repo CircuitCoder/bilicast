@@ -7,7 +7,7 @@
   cursor: pointer;
   color: black;
 
-  opacity: .38;
+  opacity: .54;
   transition: opacity .2s ease;
 
   &:hover {
@@ -25,8 +25,9 @@
 
   &.disabled {
     cursor: default;
+    opacity: .20;
     &:hover {
-      opacity: .38;
+      opacity: .20;
     }
   }
 }
