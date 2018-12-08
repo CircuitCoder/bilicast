@@ -2,11 +2,11 @@ import { TYPES } from './actions';
 
 import { Map } from 'immutable';
 
-export function list(state = null, action) {
-  return state;
-}
-
-export function entry(state = null, action) {
+export function playing(state = null, action) {
+  if(action.type === TYPES.PLAY_ENTRY) {
+    const { list, entry } = action;
+    return { list, entry };
+  }
   return state;
 }
 

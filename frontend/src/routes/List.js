@@ -2,10 +2,8 @@ import React from 'react';
 
 import { connect } from 'react-redux';
 
-import { NavLink } from 'react-router-dom';
-
 import { get, post, artwork } from '../util';
-import { fetchEntry } from '../store/actions';
+import { fetchEntry, playEntry } from '../store/actions';
 
 import Icon from '../Icon';
 import Dialog from '../Dialog';
@@ -18,7 +16,7 @@ class EntryImpl extends React.PureComponent {
   }
 
   render() {
-    const { entry } = this.props;
+    const { entry, onPlay } = this.props;
 
     let className = 'entry';
     if(this.props.className) className += ' ' + this.props.className;
@@ -55,7 +53,7 @@ class EntryImpl extends React.PureComponent {
       </div>
       <div className="entry-actions">
         { entry.status === 'ready' ?
-            <Icon className="primary">play_arrow</Icon>
+            <Icon className="primary" onClick={onPlay}>play_arrow</Icon>
             :
             <Icon className="disabled rotate">sync</Icon>
         }
@@ -115,6 +113,14 @@ class List extends React.PureComponent {
     return this.reloadList();
   }
 
+  playEntry(entry) {
+    this.props.play(entry, this.state.list);
+  }
+
+  playList() {
+    this.playEntry(this.state.list.entries[0]);
+  }
+
   render() {
     const { list, adding, importing, addTarget } = this.state;
     if(list === null)
@@ -127,11 +133,11 @@ class List extends React.PureComponent {
         <div className="actions">
           <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
           <Icon>list</Icon>
-          <Icon className="primary">play_arrow</Icon>
+          { list.entries.length > 0 ? <Icon className="primary" onClick={() => this.playList()}>play_arrow</Icon> : null }
         </div>
       </div>
       <div className="entries">
-        { list.entries.map(e => <Entry key={e} id={e} />)}
+        { list.entries.map(e => <Entry key={e} id={e} onPlay={() => this.playEntry(e)} />)}
         { list.entries.length === 0 ?
             <div className="list-empty" onClick={() => this.setState({ adding: true })}>
               <Icon>add</Icon>
@@ -161,4 +167,8 @@ class List extends React.PureComponent {
   }
 };
 
-export default List;
+const mapS2P = null;
+const mapD2P = (dispatch, props) => ({
+  play: (id, list) => dispatch(playEntry(id, list)),
+});
+export default connect(mapS2P, mapD2P)(List);

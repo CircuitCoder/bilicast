@@ -24,9 +24,47 @@
   left: 0;
   right: 0;
 
+  display: flex;
+
   box-shadow: rgba(0,0,0,.3) 0 -2px 6px;
-  border-top: $primary 5px solid;
   box-sizing: border-box;
+
+  padding-top: 5px;
+
+  .progress {
+    height: 5px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: lighten(grayscale($primary), 20%);
+
+    .progress-inner {
+      transition: transform .2s ease;
+
+      background: $primary;
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  .playing {
+    display: flex;
+    flex: 1;
+
+    .bottom-artwork {
+      width: 140px;
+      background-size: cover;
+    }
+
+    .control {
+      flex: 1;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
 }
 
 /* Shared */

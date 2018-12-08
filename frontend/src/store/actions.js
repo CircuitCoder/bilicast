@@ -2,6 +2,7 @@ import { get } from '../util';
 
 export const TYPES = {
   CACHE_ENTRY: 'CACHE_ENTRY',
+  PLAY_ENTRY: 'PLAY_ENTRY',
 };
 
 Object.freeze(TYPES);
@@ -9,6 +10,12 @@ Object.freeze(TYPES);
 export const cacheEntry = entry => ({
   type: TYPES.CACHE_ENTRY,
   entry,
+});
+
+export const playEntry = (entry, list) => ({
+  type: TYPES.PLAY_ENTRY,
+  entry,
+  list,
 });
 
 // Async actions
