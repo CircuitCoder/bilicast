@@ -2,10 +2,13 @@ import React from 'react';
 
 import { NavLink } from 'react-router-dom';
 
+import Icon from '../Icon';
+
 const Home = () => (
-  <div>
-    <NavLink to="/new" className="button">Create List</NavLink>
-  </div>
+  <NavLink to="/new" component="div" className="home">
+    <Icon>playlist_add</Icon>
+    <div class="splash-hint">Create Playlist</div>
+  </NavLink>
 );
 
 export default Home;

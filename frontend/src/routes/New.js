@@ -4,6 +4,8 @@ import { withRouter } from 'react-router-dom';
 
 import { post } from '../util';
 
+import Icon from '../Icon';
+
 class New extends React.PureComponent {
   state = {
     title: "",
@@ -11,7 +13,13 @@ class New extends React.PureComponent {
 
   render() {
     return (
-      <div>
+      <div className="new">
+        <div className="title">
+          <Icon>playlist_add</Icon>
+          Create Playlist
+        </div>
+
+        <div class="input-hint">Title</div>
         <input
           value={this.state.title}
           onChange={ev => this.setState({ title: ev.target.value })}

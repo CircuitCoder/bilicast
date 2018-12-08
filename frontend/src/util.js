@@ -30,3 +30,7 @@ export async function get(endpoint, method = 'GET') {
 
   return parseResp(resp);
 }
+
+export function artwork(id) {
+  return `/store/${id}/art.jpg`;
+}

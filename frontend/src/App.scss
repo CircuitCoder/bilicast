@@ -1,0 +1,89 @@
+@import './assets/icons/material-icons.css';
+
+@import './const.scss';
+@import './shared.scss';
+
+.App {
+  text-align: center;
+}
+
+/* Normalize */
+
+body {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* General */
+.title {
+  display: flex;
+  align-items: center;
+
+  font-size: 28px;
+  line-height: 40px;
+  font-weight: bold;
+  color: rgba(0,0,0,.54);
+  margin-bottom: 20px;
+
+  > .material-icons {
+    font-size: 36px;
+    margin-right: 5px;
+  }
+
+  .actions {
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+
+    .material-icons {
+      @extend %action-icon;
+    }
+  }
+}
+
+input {
+  width: 100%;
+  border: 0;
+  padding: 0;
+  margin-bottom: 10px;
+  line-height: 32px;
+  font-size: 16px;
+  outline: 0;
+  border-bottom: rgba(0,0,0,.12) 1px solid;
+
+  transition: border-bottom-color .2s ease;
+
+  &:focus {
+    border-bottom-color: $primary;
+  }
+}
+
+.input-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 16px;
+  margin-bottom: 0;
+  color: rgba(0,0,0,.38);
+}
+
+button {
+  border: 0;
+  outline: 0;
+  background: $primary;
+
+  color: white;
+  font-size: 16px;
+  padding: 10px 15px;
+
+  cursor: pointer;
+
+  border-radius: 2px;
+  box-shadow: rgba(0,0,0,.3) 0 2px 6px;
+
+  font-variant: small-caps;
+  font-weight: bold;
+}

@@ -1,0 +1,25 @@
+@import './const.scss';
+
+%action-icon {
+  font-size: 24px;
+  margin-left: 10px;
+
+  cursor: pointer;
+  color: black;
+
+  opacity: .38;
+  transition: opacity .2s ease;
+
+  &:hover {
+    opacity: .87;
+  }
+
+  &.primary {
+    opacity: .7;
+    color: $primary;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}

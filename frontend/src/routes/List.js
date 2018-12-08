@@ -2,8 +2,12 @@ import React from 'react';
 
 import { connect } from 'react-redux';
 
-import { get, post } from '../util';
+import { NavLink } from 'react-router-dom';
+
+import { get, post, artwork } from '../util';
 import { fetchEntry } from '../store/actions';
+
+import Icon from '../Icon';
 
 class EntryImpl extends React.PureComponent {
   constructor(props) {
@@ -13,7 +17,33 @@ class EntryImpl extends React.PureComponent {
   }
 
   render() {
-    return <div>{ JSON.stringify(this.props.entry) }</div>
+    const entry = this.props.entry;
+    if(!entry) return (
+      <div className={this.props.className}>
+        <div className="loading"></div>
+      </div>
+    );
+
+    return <div className={this.props.className}>
+      <div className="entry-artwork">
+        { entry.status !== 'preparing' ?
+            <div style={{backgroundImage: `url(${artwork(entry._id)})`}} className="entry-artwork-internal" />
+            :
+            <div className="entry-artwork-internal entry-artwork-loading">
+              <div className="loading"></div>
+            </div>
+        }
+      </div>
+      <div className="entry-info">
+        <div className="entry-title">{ entry.title }</div>
+        <div className="entry-author">{ entry.uploader }</div>
+        <div className="entry-hint">{ entry.source } - { entry.category }</div>
+      </div>
+      <div className="entry-actions">
+        { entry.ref ? <a href={entry.ref} target="_blank"><Icon>open_in_browser</Icon></a> : null }
+        <Icon className="primary">play_arrow</Icon>
+      </div>
+    </div>
   }
 }
 
@@ -59,13 +89,23 @@ class List extends React.PureComponent {
       return <div className="loading"></div>;
 
     return <div className="list">
-      <div className="list-name">{ list.name }</div>
-      <button onClick={() => this.handleAdd()}>Add</button>
+      <div className="title">
+        <Icon>queue_music</Icon>
+        { list.name }
+        <div className="actions">
+          <Icon onClick={() => this.handleAdd()}>add</Icon>
+          <Icon>list</Icon>
+          <Icon className="primary">play_arrow</Icon>
+        </div>
+      </div>
       <div className="entries">
-        { list.entries.map(e => <Entry className="entry" id={e} />)}
+        { list.entries.map(e => <Entry key={e} className="entry" id={e} />)}
         { list.entries.length === 0 ?
-          <div className="entry-empty">Empty</div>
-          : null }
+            <div className="list-empty" onClick={() => this.handleAdd()}>
+              <Icon>add</Icon>
+              Add Entry
+            </div>
+            : null }
       </div>
     </div>;
   }

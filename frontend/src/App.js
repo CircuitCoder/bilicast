@@ -5,7 +5,7 @@ import store from './store';
 
 import Root from './Root';
 
-import './App.css';
+import './App.scss';
 
 class App extends Component {
   render() {
