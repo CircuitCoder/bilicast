@@ -76,10 +76,24 @@ function parseTarget(target) {
   if(target.match(/^av\d+/))
     return target;
 
-  const re = /^https?:\/\/(www\.)?bilibili.com\/video\/(av\d+)\/?(\?.*)?$/;
+  const re = /^https?:\/\/(www\.)?bilibili\.com\/video\/(av\d+)\/?(\?.*)?$/;
   const match = target.match(re);
 
   if(match) return match[2];
+  return null;
+}
+
+function parseFavlist(url) {
+  console.log(url);
+  const re = /^https?:\/\/space\.bilibili\.com\/(\d+)\/favlist\?fid=(\d+)$/;
+  const match = url.match(re);
+  console.log('wtf');
+
+  if(match) return {
+    uid: match[1],
+    favid: match[2],
+  };
+
   return null;
 }
 
@@ -91,6 +105,10 @@ class List extends React.PureComponent {
 
     addTarget: '',
     addWorking: false,
+
+    importTarget: '',
+    importWorking: null,
+    importLength: 0,
   }
 
   constructor(props) {
@@ -127,6 +145,30 @@ class List extends React.PureComponent {
     return this.reloadList();
   }
 
+  async handleImport() {
+    this.setState({ importWorking: 0 });
+    const target = parseFavlist(this.state.importTarget);
+    if(!target) {
+      alert('Meow, check your input.');
+      this.setState({ importWorking: null });
+      return;
+    }
+
+    const { uid, favid } = target;
+
+    const avs = await get(`/helper/playlist/${uid}/${favid}`);
+    this.setState({ importLength: avs.length });
+
+    const mapped = avs.map((e, i) => [e, i]);
+    for(const [av, index] of mapped) {
+      this.setState({ importWorking: index+1 });
+      const ids = await get(`/entry/download/${av}`);
+      await post(`/list/${this.props.match.params.id}/entries`, ids);
+    }
+
+    this.setState({ importWorking: null, importing: false });
+  }
+
   playEntry(index) {
     this.props.play(this.state.list, index);
   }
@@ -143,7 +185,13 @@ class List extends React.PureComponent {
 
   render() {
     const { isPlaying, playingIndex, store } = this.props;
-    const { list, adding, importing, addTarget, addWorking } = this.state;
+    const { list, adding, importing, addTarget, addWorking, importTarget, importWorking, importLength } = this.state;
+
+    let importText = 'Import';
+    if(importWorking === 0)
+      importText = 'Fetching AV Numbers...';
+    else if(importWorking !== null)
+      importText = `${importWorking}/${importLength}...`;
 
     if(list === null)
       return <div className="loading"></div>;
@@ -154,7 +202,7 @@ class List extends React.PureComponent {
         { list.name }
         <div className="actions">
           <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
-          <Icon>subscriptions</Icon>
+          <Icon onClick={() => this.setState({ importing: true })}>subscriptions</Icon>
           { list.entries.map(e => store.get(e)).find(e => e && e.status === 'ready') !== undefined ?
               <Icon className="primary" onClick={() => this.playList()}>play_arrow</Icon> : null }
         </div>
@@ -184,6 +232,24 @@ class List extends React.PureComponent {
 
         <div className="dialog-actions">
           <button onClick={() => this.handleAdd()} disabled={addWorking}>{ addWorking ? 'Working...' : 'Add'}</button>
+        </div>
+      </Dialog>
+
+      <Dialog open={importing} onClose={() => this.setState({ importing: false })}>
+        <div className="dialog-title">
+          <Icon>subscriptions</Icon>
+          Import Favlist
+        </div>
+
+        <div className="input-hint">Favlist URL (Public)</div>
+        <input
+          placeholder="https://space.bilibili.com/123/favlist?fid=456"
+          value={importTarget}
+          onChange={ev => this.setState({ importTarget: ev.target.value })}
+        />
+
+        <div className="dialog-actions">
+          <button onClick={() => this.handleImport()} disabled={importWorking !== null}>{ importText }</button>
         </div>
       </Dialog>
     </div>;
