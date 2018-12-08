@@ -119,7 +119,8 @@ class List extends React.PureComponent {
   }
 
   playList() {
-    // TODO: find matching entry
+    if(this.props.isPlaying) // No-op, don't play the first track to mess everyone up
+      return;
     this.playEntry(0);
   }
 
