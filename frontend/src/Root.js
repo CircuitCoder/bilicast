@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 
 import { BrowserRouter as Router, Route, Switch, NavLink } from 'react-router-dom';
 
+import { setRepeat } from './store/actions';
+
 import { artwork, music } from './util';
 
 import Icon from './Icon';
@@ -18,6 +20,12 @@ import './Root.scss';
 
 const mapS2P = state => ({
   playing: state.playing,
+  playingEntry: state.playing ? state.playing.list.entries[state.playing.index] : null,
+  repeating: state.repeating,
+});
+
+const mapD2P = dispatch => ({
+  setRepeat: repeat => dispatch(setRepeat(repeat)),
 });
 
 class Root extends React.PureComponent {
@@ -33,10 +41,10 @@ class Root extends React.PureComponent {
   }
 
   componentDidUpdate(pp, ps) {
-    if(!this.props.playing)
+    if(!this.props.playingEntry)
       this.stop();
 
-    if(pp.playing && this.props.playing.entry === pp.playing.entry)
+    if(pp.playingEntry && this.props.playingEntry === pp.playingEntry)
       return;
 
     this.newTrack();
@@ -61,7 +69,7 @@ class Root extends React.PureComponent {
   async newTrack() {
     const audio = this.audio.current;
 
-    audio.src = music(this.props.playing.entry);
+    audio.src = music(this.props.playingEntry);
     await audio.load()
     // TODO: check if the track has changed
     // TODO: setup media notification
@@ -78,7 +86,7 @@ class Root extends React.PureComponent {
   }
 
   render() {
-    const { playing } = this.props;
+    const { playing, repeating, setRepeat, playingEntry } = this.props;
     const { progress, paused } = this.state;
 
     return (
@@ -94,7 +102,7 @@ class Root extends React.PureComponent {
           <nav className="bottom">
             { playing ? 
                 <div className="playing">
-                  <div className="bottom-artwork" style={{backgroundImage: `url(${artwork(playing.entry)})`}}></div>
+                  <div className="bottom-artwork" style={{backgroundImage: `url(${artwork(playingEntry)})`}}></div>
                   <div className="control">
                     <Icon>skip_previous</Icon>
                     { paused ? 
@@ -104,7 +112,7 @@ class Root extends React.PureComponent {
                     }
                     <Icon>skip_next</Icon>
                     <div className="spacer"></div>
-                    <Icon>repeat</Icon>
+                    <Icon onClick={() => setRepeat(!repeating)}>{ repeating ? 'repeat' : 'trending_flat' }</Icon>
                     <NavLink to={`/${playing.list._id}`}><Icon>queue_music</Icon></NavLink>
                   </div>
                 </div>
@@ -134,4 +142,4 @@ class Root extends React.PureComponent {
   }
 }
 
-export default connect(mapS2P)(Root);
+export default connect(mapS2P, mapD2P)(Root);

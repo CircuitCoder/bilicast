@@ -114,16 +114,17 @@ class List extends React.PureComponent {
     return this.reloadList();
   }
 
-  playEntry(entry) {
-    this.props.play(entry, this.state.list);
+  playEntry(index) {
+    this.props.play(this.state.list, index);
   }
 
   playList() {
-    this.playEntry(this.state.list.entries[0]);
+    // TODO: find matching entry
+    this.playEntry(0);
   }
 
   render() {
-    const { isPlaying, playingEntry } = this.props;
+    const { isPlaying, playingIndex } = this.props;
     const { list, adding, importing, addTarget } = this.state;
 
     if(list === null)
@@ -140,7 +141,7 @@ class List extends React.PureComponent {
         </div>
       </div>
       <div className="entries">
-        { list.entries.map(e => <Entry key={e} id={e} onPlay={() => this.playEntry(e)} isActive={isPlaying && playingEntry === e} />)}
+        { list.entries.map((e, i) => <Entry key={e} id={e} onPlay={() => this.playEntry(i)} isActive={isPlaying && playingIndex === i} />)}
         { list.entries.length === 0 ?
             <div className="list-empty" onClick={() => this.setState({ adding: true })}>
               <Icon>add</Icon>
@@ -172,10 +173,10 @@ class List extends React.PureComponent {
 
 const mapS2P = (state, props) => ({
   isPlaying: state.playing && state.playing.list._id === props.match.params.id,
-  playingEntry: state.playing && state.playing.entry,
+  playingIndex: state.playing && state.playing.index,
 });
 
 const mapD2P = (dispatch, props) => ({
-  play: (id, list) => dispatch(playEntry(id, list)),
+  play: (list, index) => dispatch(playEntry(list, index)),
 });
 export default connect(mapS2P, mapD2P)(List);

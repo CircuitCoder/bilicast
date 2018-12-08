@@ -3,6 +3,7 @@ import { get } from '../util';
 export const TYPES = {
   CACHE_ENTRY: 'CACHE_ENTRY',
   PLAY_ENTRY: 'PLAY_ENTRY',
+  SET_REPEAT: 'SET_REPEAT',
 };
 
 Object.freeze(TYPES);
@@ -12,10 +13,15 @@ export const cacheEntry = entry => ({
   entry,
 });
 
-export const playEntry = (entry, list) => ({
+export const playEntry = (list, index) => ({
   type: TYPES.PLAY_ENTRY,
-  entry,
   list,
+  index,
+});
+
+export const setRepeat = repeat => ({
+  type: TYPES.SET_REPEAT,
+  repeat,
 });
 
 // Async actions
