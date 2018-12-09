@@ -16,7 +16,7 @@ class EntryImpl extends React.PureComponent {
   }
 
   render() {
-    const { entry, onPlay, isActive } = this.props;
+    const { entry, onPlay, onDelete, isActive } = this.props;
 
     let className = 'entry';
     if(this.props.className) className += ' ' + this.props.className;
@@ -54,7 +54,11 @@ class EntryImpl extends React.PureComponent {
       </div>
       <div className="entry-actions">
         { entry.status === 'ready' ?
-            <Icon className="primary" onClick={onPlay}>play_arrow</Icon>
+            <React.Fragment>
+              <Icon className="primary" onClick={onPlay}>play_arrow</Icon>
+              <Icon>get_app</Icon>
+              <Icon onClick={onDelete}>delete</Icon>
+            </React.Fragment>
             :
             <Icon className="disabled rotate">sync</Icon>
         }
@@ -169,7 +173,7 @@ class List extends React.PureComponent {
     this.setState({ importWorking: null, importing: false });
   }
 
-  playEntry(index) {
+  playIndex(index) {
     this.props.play(this.state.list, index);
   }
 
@@ -178,9 +182,14 @@ class List extends React.PureComponent {
       return;
     const index = this.state.list.entries.findIndex(e => e === this.props.playingId);
     if(index !== -1)
-      this.playEntry(index);
+      this.playIndex(index);
     else
-      this.playEntry(0);
+      this.playIndex(0);
+  }
+
+  async deleteEntry(e) {
+    await get(`/list/${this.props.match.params.id}/entries/${e}`, 'DELETE');
+    return this.reloadList();
   }
 
   render() {
@@ -208,7 +217,14 @@ class List extends React.PureComponent {
         </div>
       </div>
       <div className="entries">
-        { list.entries.map((e, i) => <Entry key={e} id={e} onPlay={() => this.playEntry(i)} isActive={isPlaying && playingIndex === i} />)}
+        { list.entries.map((e, i) => <Entry
+          key={e}
+          id={e}
+          onPlay={() => this.playIndex(i)}
+          onDelete={() => this.deleteEntry(e)}
+          isActive={isPlaying && playingIndex === i}
+        />)}
+
         { list.entries.length === 0 ?
             <div className="list-empty" onClick={() => this.setState({ adding: true })}>
               <Icon>add</Icon>
