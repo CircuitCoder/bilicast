@@ -15,4 +15,19 @@ const middlewares = !hasLogger ?
 
 const store = createStore(handlers, middlewares);
 
+store.subscribe(() => {
+  const state = store.getState();
+  if(state.playing) {
+    const id = state.playing.list.entries[state.playing.index];
+    const inst = state.store.get(id);
+
+    if(inst) {
+      document.title = `${inst.title} | ${state.playing.list.name} | Bilicast`;
+      return;
+    }
+  }
+
+  document.title = 'Bilicast';
+});
+
 export default store;
