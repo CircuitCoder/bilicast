@@ -16,7 +16,7 @@ export function store(state = new Map(), action) {
   return state;
 }
 
-export function repeating(state = false, action) {
+export function repeating(state = null, action) {
   if(action.type === TYPES.SET_REPEAT)
     return action.repeat;
   return state;

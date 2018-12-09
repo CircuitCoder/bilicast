@@ -19,14 +19,29 @@ import {
 import './Root.scss';
 
 function findNext({ playing: { list: { entries }, index }, repeating }) {
-  if(!repeating && index === entries.length - 1) return null;
+  if(repeating === null && index === entries.length - 1) return null;
+  if(repeating === 'SHUFFLE') return -1;
   return (index + 1) % entries.length;
 }
 
 function findPrev({ playing: { list: { entries }, index }, repeating }) {
-  if(!repeating && index === 0) return null;
+  if(repeating === null && index === 0) return null;
+  if(repeating === 'SHUFFLE') return null;
+
   if(index === 0) return entries.length - 1;
-  else return index - 1;
+  return index - 1;
+}
+
+function nextRepeatState(cur) {
+  if(cur === null) return 'REPEAT';
+  if(cur === 'REPEAT') return 'SHUFFLE';
+  return null;
+}
+
+function repeatIcon(cur) {
+  if(cur === null) return 'trending_flat';
+  if(cur === 'SHUFFLE') return 'shuffle';
+  return 'repeat';
 }
 
 const mapS2P = state => {
@@ -93,7 +108,10 @@ class Root extends React.PureComponent {
 
     let inst = this.props.playingEntryInst;
     if(!inst || inst.status !== 'ready') {
-      this.next();
+      if(this.props.next)
+        this.next();
+      else this.props.playEntry(this.props.playing.list, 0);
+
       return;
       // Looping around is highly unprobably, because we've already blocked list play when no entry is known to be ready
       // and non-ready entries can't be played directly either
@@ -115,8 +133,21 @@ class Root extends React.PureComponent {
   }
 
   next() {
-    if(this.props.next !== null)
-      this.props.playEntry(this.props.playing.list, this.props.next);
+    if(this.props.next === null)
+      return
+    let next = this.props.next;
+    if(next === -1) {
+      // Randomize
+      const len = this.props.playing.list.entries.length;
+      const cur = this.props.playing.index;
+
+      let pick = Math.floor(Math.random() * (len-1));
+
+      if(pick >= cur) ++pick;
+      next = pick;
+    }
+
+    this.props.playEntry(this.props.playing.list, next);
   }
 
   updateProgress() {
@@ -158,7 +189,7 @@ class Root extends React.PureComponent {
                     }
                     <Icon onClick={() => this.next()} className={next === null ? 'disabled' : ''}>skip_next</Icon>
                     <div className="spacer"></div>
-                    <Icon onClick={() => setRepeat(!repeating)}>{ repeating ? 'repeat' : 'trending_flat' }</Icon>
+                    <Icon onClick={() => setRepeat(nextRepeatState(repeating))}>{ repeatIcon(repeating) }</Icon>
                     <NavLink to={`/${playing.list._id}`}><Icon>queue_music</Icon></NavLink>
                   </div>
                 </div>
