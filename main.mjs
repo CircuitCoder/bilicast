@@ -6,6 +6,7 @@ import Static from 'koa-static';
 import mongoose from 'mongoose';
 import Mount from 'koa-mount';
 import Bodyparser from 'koa-bodyparser';
+import CORS from '@koa/cors';
 
 import router from './routes';
 
@@ -17,6 +18,9 @@ const basedir = path.dirname(new URL(import.meta.url).pathname);
 const app = new Koa();
 
 app.use(Helmet());
+app.use(CORS({
+  credentials: true,
+}));
 app.use(Bodyparser());
 app.use(router.routes(), router.allowedMethods());
 app.use(Static(path.join(basedir, 'frontend', 'build')));

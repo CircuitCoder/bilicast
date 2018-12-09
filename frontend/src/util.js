@@ -1,3 +1,5 @@
+import { BACKEND } from './config';
+
 async function parseResp(resp) {
   if(resp.status === 204) return null;
   else if(resp.status !== 200) throw resp.statusText;
@@ -7,7 +9,7 @@ async function parseResp(resp) {
 }
 
 export async function post(endpoint, payload, method = 'POST') {
-  const resp = await fetch(endpoint, {
+  const resp = await fetch(BACKEND + endpoint, {
     method,
     body: JSON.stringify(payload),
     headers: new Headers({
@@ -20,7 +22,7 @@ export async function post(endpoint, payload, method = 'POST') {
 }
 
 export async function get(endpoint, method = 'GET') {
-  const resp = await fetch(endpoint, {
+  const resp = await fetch(BACKEND + endpoint, {
     method,
     headers: new Headers({
       'Content-Type': 'application/json',
@@ -32,9 +34,9 @@ export async function get(endpoint, method = 'GET') {
 }
 
 export function artwork(id) {
-  return `/store/${id}/art.jpg?cache`;
+  return `${BACKEND}/store/${id}/art.jpg?cache`;
 }
 
 export function music(id) {
-  return `/store/${id}/content.m4a?cache`;
+  return `${BACKEND}/store/${id}/content.m4a?cache`;
 }

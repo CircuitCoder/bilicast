@@ -122,7 +122,7 @@ self.addEventListener('fetch', event => {
   if(noCache(event.request)) return null;
 
   // No asset caching in dev mode
-  // if(ENV !== 'production') return null;
+  if(ENV !== 'production') return null;
 
   // Is assets, find from cache
   const resp = fromCache(event.request);

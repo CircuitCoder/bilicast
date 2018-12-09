@@ -6,6 +6,7 @@
   "author": "Liu Xiaoyi <circuitcoder0@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@koa/cors": "2",
     "immutable": "^4.0.0-rc.12",
     "koa": "^2.6.2",
     "koa-bodyparser": "^4.2.1",

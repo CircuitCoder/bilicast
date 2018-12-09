@@ -142,7 +142,7 @@ class List extends React.PureComponent {
     if(this._mounted)
       this.setState({ list: null });
     else
-      this.state = { list: null };
+      this.state = { list: null, ...this.state };
 
     const query = update ? 'update' : 'cache';
     const list = await get(`/list/${this.props.match.params.id}?${query}`);
