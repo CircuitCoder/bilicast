@@ -138,13 +138,14 @@ class List extends React.PureComponent {
     this._mounted = false;
   }
 
-  async reloadList() {
+  async reloadList(update = false) {
     if(this._mounted)
       this.setState({ list: null });
     else
       this.state = { list: null };
 
-    const list = await get(`/list/${this.props.match.params.id}`);
+    const query = update ? 'update' : 'cache';
+    const list = await get(`/list/${this.props.match.params.id}?${query}`);
 
     this.setState({ list });
   }
@@ -162,7 +163,7 @@ class List extends React.PureComponent {
     await post(`/list/${this.props.match.params.id}/entries`, ids);
 
     this.setState({ adding: false, addWorking: false });
-    return this.reloadList();
+    return this.reloadList(true);
   }
 
   async handleImport() {
@@ -203,9 +204,18 @@ class List extends React.PureComponent {
       this.playIndex(0);
   }
 
+  prefetchList() {
+    for(const id of this.state.list.entries) {
+      const inst = this.props.store.get(id);
+      if(inst && inst.status === 'ready' && !inst.cached)
+        this.props.prefetchEntry(id);
+    }
+    return this.reloadList(true);
+  }
+
   async deleteEntry(e) {
     await get(`/list/${this.props.match.params.id}/entries/${e}`, 'DELETE');
-    return this.reloadList();
+    return this.reloadList(true);
   }
 
   render() {
@@ -228,6 +238,11 @@ class List extends React.PureComponent {
         <div className="actions">
           <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
           <Icon onClick={() => this.setState({ importing: true })}>subscriptions</Icon>
+          { list.cached ? 
+              <Icon className="disabled">done</Icon>
+              :
+              <Icon onClick={() => this.prefetchList()}>get_app</Icon>
+          }
           { list.entries.map(e => store.get(e)).find(e => e && e.status === 'ready') !== undefined ?
               <Icon className="primary" onClick={() => this.playList()}>play_arrow</Icon> : null }
         </div>
