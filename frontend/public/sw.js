@@ -4,7 +4,8 @@ function isBackend(req) {
   const url = new URL(req.url);
 
   if(url.pathname.indexOf('/entry') === 0
-    || url.pathname.indexOf('/list') === 0)
+    || url.pathname.indexOf('/list') === 0
+    || url.pathname.indexOf('/store') === 0)
     return true;
 
   return false;
@@ -43,6 +44,52 @@ function fromCache(req) {
   });
 }
 
+async function fetchBackend(req) {
+  if(req.method !== 'GET') return fetch(req);
+
+  const url = new URL(req.url);
+  const queries = url.search.substr(1).split('&').map(decodeURIComponent);
+
+  const liveReq = new Request(req.url.split('?')[0], {
+    method: req.method,
+    headers: req.headers,
+    credentials: req.credentials,
+  });
+
+  if(queries.includes('cache') && !queries.includes('update')) {
+    console.log(`Fetching from cache: ${liveReq.url}`);
+    const slot = await caches.match(liveReq);
+    if(slot) return slot;
+    else console.log('Missed');
+  }
+
+  const live = await fetch(liveReq);
+
+  if(queries.includes('update')) {
+    const cache = await caches.open('v1');
+
+    let modified;
+    if(live.headers.get('Content-Type').match(/^application\/json;?/)) {
+      const body = await live.json();
+
+      body.cached = true;
+      modified = new Response(JSON.stringify(body), {
+        status: live.status,
+        statusText: live.statusText,
+        headers: live.headers,
+      });
+    } else
+      modified = live;
+
+    const returning = modified.clone();
+    cache.put(liveReq, modified);
+
+    return returning;
+  }
+
+  return live;
+}
+
 self.addEventListener('install', event => {
   self.skipWaiting();
 });
@@ -50,7 +97,12 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const toBackend = isBackend(event.request);
 
-  if(toBackend) return null;
+  if(toBackend)
+    event.respondWith(fetchBackend(event.request).then(resp => {
+      if(resp) return resp;
+      else return fetch(event.request);
+    }));
+
   if(noCache(event.request)) return null;
 
   // No asset caching in dev mode

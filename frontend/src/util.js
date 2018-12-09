@@ -32,9 +32,9 @@ export async function get(endpoint, method = 'GET') {
 }
 
 export function artwork(id) {
-  return `/store/${id}/art.jpg`;
+  return `/store/${id}/art.jpg?cache`;
 }
 
 export function music(id) {
-  return `/store/${id}/content.m4a`;
+  return `/store/${id}/content.m4a?cache`;
 }

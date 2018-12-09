@@ -28,12 +28,13 @@ export const setRepeat = repeat => ({
 const fetchQueue = new Set();
 let polling = false;
 
-export const fetchEntry = eid =>
+export const fetchEntry = (eid, prefetch = false) =>
   async dispatch => {
     if(fetchQueue.has(eid)) return;
 
     fetchQueue.add(eid);
-    const entry = await get(`/entry/${eid}`);
+    const query = prefetch ? 'update' : 'cache';
+    const entry = await get(`/entry/${eid}?${query}`);
     dispatch(cacheEntry(entry));
     fetchQueue.delete(eid);
 
@@ -59,4 +60,13 @@ const pollEntry = () =>
     const promises = keys.map(e => dispatch(fetchEntry(e)));
     await Promise.all(promises);
     setTimeout(() => dispatch(pollEntry()), 1000);
-  }
+  };
+
+export const prefetchEntry = eid =>
+  async dispatch => {
+    const art = get(`/store/${eid}/art.jpg?update`);
+    const content = get(`/store/${eid}/content.m4a?update`);
+    await Promise.all([art, content]);
+
+    await dispatch(fetchEntry(eid, true));
+  };

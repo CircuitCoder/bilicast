@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { get, post, artwork } from '../util';
-import { fetchEntry, playEntry } from '../store/actions';
+import { fetchEntry, playEntry, prefetchEntry } from '../store/actions';
 
 import Icon from '../Icon';
 import Dialog from '../Dialog';
@@ -16,7 +16,7 @@ class EntryImpl extends React.PureComponent {
   }
 
   render() {
-    const { entry, onPlay, onDelete, isActive } = this.props;
+    const { entry, onPlay, onDelete, onCache, isActive } = this.props;
 
     let className = 'entry';
     if(this.props.className) className += ' ' + this.props.className;
@@ -56,7 +56,11 @@ class EntryImpl extends React.PureComponent {
         { entry.status === 'ready' ?
             <React.Fragment>
               <Icon className="primary" onClick={onPlay}>play_arrow</Icon>
-              <Icon>get_app</Icon>
+              { entry.cached ?
+                  <Icon className="disabled">done</Icon>
+                  :
+                  <Icon onClick={onCache}>get_app</Icon>
+              }
               <Icon onClick={onDelete}>delete</Icon>
             </React.Fragment>
             :
@@ -126,8 +130,20 @@ class List extends React.PureComponent {
       this.reloadList();
   }
 
+  componentDidMount() {
+    this._mounted = true;
+  }
+
+  componentWillUnmount() {
+    this._mounted = false;
+  }
+
   async reloadList() {
-    this.setState({ list: null });
+    if(this._mounted)
+      this.setState({ list: null });
+    else
+      this.state = { list: null };
+
     const list = await get(`/list/${this.props.match.params.id}`);
 
     this.setState({ list });
@@ -193,7 +209,7 @@ class List extends React.PureComponent {
   }
 
   render() {
-    const { isPlaying, playingIndex, store } = this.props;
+    const { isPlaying, playingIndex, store, prefetchEntry } = this.props;
     const { list, adding, importing, addTarget, addWorking, importTarget, importWorking, importLength } = this.state;
 
     let importText = 'Import';
@@ -222,6 +238,7 @@ class List extends React.PureComponent {
           id={e}
           onPlay={() => this.playIndex(i)}
           onDelete={() => this.deleteEntry(e)}
+          onCache={() => prefetchEntry(e)}
           isActive={isPlaying && playingIndex === i}
         />)}
 
@@ -281,5 +298,6 @@ const mapS2P = (state, props) => ({
 
 const mapD2P = (dispatch, props) => ({
   play: (list, index) => dispatch(playEntry(list, index)),
+  prefetchEntry: id => dispatch(prefetchEntry(id)),
 });
 export default connect(mapS2P, mapD2P)(List);
