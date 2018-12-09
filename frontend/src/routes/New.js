@@ -8,7 +8,8 @@ import Icon from '../Icon';
 
 class New extends React.PureComponent {
   state = {
-    title: "",
+    title: '',
+    id: '',
   }
 
   render() {
@@ -24,13 +25,23 @@ class New extends React.PureComponent {
           value={this.state.title}
           onChange={ev => this.setState({ title: ev.target.value })}
         />
+
+        <div className="input-hint">ID</div>
+        <input
+          value={this.state.id}
+          onChange={ev => this.setState({ id: ev.target.value })}
+        />
         <button onClick={() => this.handleNew()}>Create</button>
       </div>
     );
   }
 
   async handleNew() {
-    const resp = await post('/list', { name: this.state.title });
+    const resp = await post('/list', {
+      name: this.state.title,
+      id: this.state.id,
+    });
+
     this.props.history.push(`/${resp._id}`);
   }
 };

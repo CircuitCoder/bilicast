@@ -1,11 +1,18 @@
+import util from 'util';
+import crypto from 'crypto';
+
 import Router from 'koa-router';
+
+const randomBytes = util.promisify(crypto.randomBytes);
 
 import List from '../db/List';
 
 const router = new Router();
 
 router.post('/', async ctx => {
+  const id = ctx.request.body.id || (await randomBytes(12)).toString('hex');
   const list = await List.create({
+    _id: id,
     name: ctx.request.body.name,
   });
 
