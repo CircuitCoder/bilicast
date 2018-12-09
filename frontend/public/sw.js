@@ -16,19 +16,32 @@ function noCache(req) {
 
   if(url.pathname.indexOf('/sockjs-node') === 0)
     return true;
+  if(url.pathname.indexOf('\.hot-update\.') !== -1)
+    return true;
+  if(url.pathname.indexOf('/manifest') === 0)
+    return true;
 
   return false;
+}
+
+async function serveIndex() {
+  try {
+    const resp = await fetch('/index.html')
+    const cache = await caches.open('v1');
+    await cache.put('/index.html', resp.clone());
+    return resp;
+  } catch(e) {
+    console.error(e);
+    return await caches.match('/index.html');
+  }
 }
 
 function fromCache(req) {
   const url = new URL(req.url);
   const pn = url.pathname;
 
-  if(pn === '/' || pn === '/new' || pn.split('/').length === 2) {
-    // From index
-    // TODO: respond with cache
-    return null;
-  }
+  if(pn === '/' || pn === '/new' || pn.split('/').length === 2)
+    return serveIndex();
 
   return caches.match(req).then(resp => {
     if(resp) return resp;
@@ -97,16 +110,19 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const toBackend = isBackend(event.request);
 
-  if(toBackend)
+  if(toBackend) {
     event.respondWith(fetchBackend(event.request).then(resp => {
       if(resp) return resp;
       else return fetch(event.request);
     }));
+    return;
+  }
 
+  console.log(noCache(event.request), event.request.url);
   if(noCache(event.request)) return null;
 
   // No asset caching in dev mode
-  if(ENV !== 'production') return null;
+  // if(ENV !== 'production') return null;
 
   // Is assets, find from cache
   const resp = fromCache(event.request);
