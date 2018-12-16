@@ -264,7 +264,7 @@ class List extends React.PureComponent {
               </React.Fragment>
               : null }
               
-          { list.cached ? // TODO: all cached
+          { list.cached && list.entries.every(e => e.cached) ?
               <Icon className="disabled">done</Icon>
               :
               <Icon onClick={() => this.prefetchList()}>get_app</Icon>
