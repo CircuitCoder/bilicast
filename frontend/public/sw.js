@@ -20,6 +20,8 @@ function noCache(req) {
     return true;
   if(url.pathname.indexOf('/manifest') === 0)
     return true;
+  if(url.pathname.indexOf('/favicon') === 0)
+    return true;
 
   return false;
 }
@@ -40,7 +42,7 @@ function fromCache(req) {
   const url = new URL(req.url);
   const pn = url.pathname;
 
-  if(pn === '/' || pn === '/new' || pn.split('/').length === 2)
+  if(pn === '' || pn === '/' || pn === '/new' || pn === '/login' || pn.split('/').length === 2)
     return serveIndex();
 
   return caches.match(req).then(resp => {

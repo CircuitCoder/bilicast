@@ -170,7 +170,12 @@ class List extends React.PureComponent {
       this.state = { ...this.state, loading: true };
 
     const query = update ? 'update' : 'cache';
-    const list = await get(`/list/${this.props.match.params.id}?${query}`);
+    let list;
+    try {
+      list = await get(`/list/${this.props.match.params.id}?${query}`);
+    } catch(e) {
+      list = null;
+    }
 
     this.setState({ list, loading: false });
 
