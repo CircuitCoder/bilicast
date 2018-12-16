@@ -9,6 +9,9 @@ export const TYPES = {
 
   PREFETCH_STARTED: 'PREFETCH_STARTED',
   PREFETCH_FINISHED: 'PREFETCH_FINISHED',
+
+  QUEUE_RECENT: 'QUEUE_RECENT',
+  INIT_RECENTS: 'INIT_RECENTS',
 };
 
 Object.freeze(TYPES);
@@ -45,6 +48,17 @@ export const prefetchStarted = id => ({
 export const prefetchFinished = id => ({
   type: TYPES.PREFETCH_FINISHED,
   id,
+});
+
+export const queueRecent = (id, name) => ({
+  type: TYPES.QUEUE_RECENT,
+  id,
+  name,
+});
+
+export const initRecents = recents => ({
+  type: TYPES.INIT_RECENTS,
+  recents,
 });
 
 // Async actions

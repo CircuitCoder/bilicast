@@ -4,8 +4,9 @@ import thunk from 'redux-thunk';
 import { createLogger } from 'redux-logger';
 
 import * as reducers from './reducers';
+import { initRecents } from './actions';
 
-import { artwork } from '../util';
+import { artwork, saveRecents, loadRecents } from '../util';
 
 const handlers = combineReducers(reducers);
 
@@ -19,6 +20,9 @@ const store = createStore(handlers, middlewares);
 
 store.subscribe(() => {
   const state = store.getState();
+
+  saveRecents(state.recents);
+
   if(state.playing) {
     const id = state.playing.list.entries[state.playing.index];
     const inst = state.store.get(id);
@@ -39,6 +43,10 @@ store.subscribe(() => {
   }
 
   document.title = 'Bilicast';
+});
+
+loadRecents().then(recents => {
+  store.dispatch(initRecents(recents));
 });
 
 export default store;

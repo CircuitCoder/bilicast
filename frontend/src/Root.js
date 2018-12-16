@@ -297,7 +297,7 @@ class Root extends React.PureComponent {
                   </React.Fragment>
                   :
                   <NavLink to="/login">
-                    <Icon>person</Icon>
+                    <Icon>build</Icon>
                   </NavLink>
               }
             </div>

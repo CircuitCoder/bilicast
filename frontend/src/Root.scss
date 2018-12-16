@@ -130,10 +130,15 @@
   }
 
   .actions {
-    padding: 10px 20px;
+    padding: 20px;
     padding-left: 10px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+
+    @media (max-width: $threshold) {
+      padding: 10px;
+    }
 
     > a {
       font-size: 0;
@@ -142,7 +147,7 @@
     .material-icons {
       @extend %action-icon;
       margin-left: 0;
-      margin-bottom: 5px;
+      margin: 2.5px 0;
     }
   }
 }
@@ -172,8 +177,48 @@
 
 /* Home */
 .home {
-  @extend %splash;
-  height: calc(100vh - #{$bottom-height} - 40px);
+  padding: 40px 0;
+
+  .title {
+    font-size: 36px;
+    line-height: 48px;
+    margin-bottom: 40px;
+
+    .material-icons {
+      font-size: 48px;
+      margin-right: 20px;
+    }
+  }
+
+  .jump-input {
+    margin-bottom: 40px;
+  }
+
+  .recent {
+    width: 100%;
+    border-left: rgba($primary, 0.5) 10px solid;
+    padding: 15px 40px;
+    margin-bottom: 20px;
+
+    transition: border-left-color .2s ease;
+
+    &:hover {
+      border-left-color: $primary;
+    }
+
+    .recent-name {
+      color: rgba(0,0,0,.87);
+      line-height: 32px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .recent-id {
+      color: rgba(0,0,0,.38);
+      line-height: 20px;
+      font-size: 16px;
+    }
+  }
 }
 
 /* Lists */
@@ -182,6 +227,14 @@
     @extend %splash;
     height: calc(100vh - #{$bottom-height} - 40px - 60px);
     cursor: pointer;
+
+    &.list-empty-disabled {
+      cursor: default;
+
+      &:hover {
+        color: rgba(0,0,0,.38);
+      }
+    }
   }
 
   .entry {

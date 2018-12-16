@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { get, post, artwork } from '../util';
-import { fetchEntry, playEntry, prefetchEntry } from '../store/actions';
+import { fetchEntry, playEntry, prefetchEntry, queueRecent } from '../store/actions';
 
 import Icon from '../Icon';
 import Dialog from '../Dialog';
@@ -174,6 +174,8 @@ class List extends React.PureComponent {
     const list = await get(`/list/${this.props.match.params.id}?${query}`);
 
     this.setState({ list });
+
+    this.props.requeueRecent(list.name);
   }
 
   async handleAdd() {
@@ -295,13 +297,19 @@ class List extends React.PureComponent {
           isActive={isPlaying && playingIndex === i}
         />)}
 
-      { /* Not login */ }
-        { list.entries.length === 0 ?
-            <div className="list-empty" onClick={() => this.setState({ adding: true })}>
-              <Icon>add</Icon>
-              Add Entry
-            </div>
-            : null }
+        { /* Not login */ }
+        { list.entries.length === 0 ? (
+          login ?
+          <div className="list-empty" onClick={() => this.setState({ adding: true })}>
+            <Icon>add</Icon>
+            Add Entry
+          </div>
+          :
+          <div className="list-empty list-empty-disabled">
+            <Icon>signal_cellular_no_sim</Icon>
+            Cats have gone, nothing's here
+          </div>
+        ) : null }
       </div>
 
       <Dialog open={adding} onClose={() => this.setState({ adding: false })}>
@@ -355,5 +363,6 @@ const mapS2P = (state, props) => ({
 const mapD2P = (dispatch, props) => ({
   play: (list, index) => dispatch(playEntry(list, index)),
   prefetchEntry: id => dispatch(prefetchEntry(id)),
+  requeueRecent: name => dispatch(queueRecent(props.match.params.id, name)),
 });
 export default connect(mapS2P, mapD2P)(List);

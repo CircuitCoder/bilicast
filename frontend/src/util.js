@@ -110,3 +110,16 @@ export function artwork(id) {
 export function music(id) {
   return `${BACKEND}/store/${id}/content.m4a?cache`;
 }
+
+export async function loadRecents() {
+  const db = await dbpromise;
+  if(!db) return false;
+  const result = await db.transaction('persistent').objectStore('persistent').get('recents');
+  return result || [];
+}
+
+export async function saveRecents(recents) {
+  const db = await dbpromise;
+  if(!db) return false;
+  await db.transaction('persistent', 'readwrite').objectStore('persistent').put(recents, 'recents');
+}
