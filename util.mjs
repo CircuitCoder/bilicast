@@ -121,7 +121,7 @@ export function convertM4a(base) {
 
 export function auth(req) {
   if(!PASSPHRASE) return true;
-  return req.header['Authorization'] === `Bearer ${PASSPHRASE}`;
+  return req.header['authorization'] === `Bearer ${PASSPHRASE}`;
 }
 
 export async function authMiddleware(ctx, next) {
