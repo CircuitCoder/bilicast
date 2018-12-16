@@ -1,6 +1,6 @@
 import { TYPES } from './actions';
 
-import { Map } from 'immutable';
+import { Map, Set } from 'immutable';
 
 export function playing(state = null, action) {
   if(action.type === TYPES.PLAY_ENTRY) {
@@ -25,5 +25,13 @@ export function repeating(state = null, action) {
 export function login(state = false, action) {
   if(action.type === TYPES.LOGIN)
     return true;
+  return state;
+}
+
+export function prefetching(state = new Set(), action) {
+  if(action.type === TYPES.PREFETCH_STARTED)
+    return state.add(action.id);
+  else if(action.type === TYPES.PREFETCH_FINISHED)
+    return state.delete(action.id);
   return state;
 }

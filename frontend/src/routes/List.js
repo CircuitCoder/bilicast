@@ -24,7 +24,7 @@ class EntryImpl extends React.PureComponent {
   }
 
   render() {
-    const { entry, onPlay, onDelete, onCache, isActive, login } = this.props;
+    const { entry, onPlay, onDelete, onCache, isActive, login, prefetching } = this.props;
 
     let className = 'entry';
     if(this.props.className) className += ' ' + this.props.className;
@@ -36,6 +36,10 @@ class EntryImpl extends React.PureComponent {
         <div className="loading"></div>
       </div>
     );
+
+    let prefetchingIcon = <Icon onClick={onCache}>get_app</Icon>;
+    if(prefetching) prefetchingIcon = <Icon className="disabled rotate">sync</Icon>;
+    else if(entry.cached) prefetchingIcon = <Icon className="disabled">done</Icon>
 
     return <div className={className}>
       <div className="entry-artwork">
@@ -64,7 +68,7 @@ class EntryImpl extends React.PureComponent {
         <div className="entry-author"><Icon>person</Icon> { entry.uploader }</div>
         { entry.ref ?
             <a href={entry.ref} target="_blank"><div className="entry-hint">
-              <Icon>link</Icon> <div class="entry-link-text">{ getEntryHint(entry) }</div>
+              <Icon>link</Icon> <div className="entry-link-text">{ getEntryHint(entry) }</div>
             </div></a>
             :
             <div className="entry-hint">
@@ -76,11 +80,7 @@ class EntryImpl extends React.PureComponent {
         { entry.status === 'ready' ?
             <React.Fragment>
               <Icon className="primary" onClick={onPlay}>play_arrow</Icon>
-              { entry.cached ?
-                  <Icon className="disabled">done</Icon>
-                  :
-                  <Icon onClick={onCache}>get_app</Icon>
-              }
+              { prefetchingIcon }
               { login ? <Icon onClick={onDelete}>delete</Icon> : null }
             </React.Fragment>
             :
@@ -95,6 +95,7 @@ const Entry = connect(
   (state, props) => ({
     entry: state.store.get(props.id),
     login: state.login,
+    prefetching: state.prefetching.has(props.id),
   }),
   (dispatch, props) => ({
     reload: () => dispatch(fetchEntry(props.id)),
@@ -138,6 +139,8 @@ class List extends React.PureComponent {
     importTarget: '',
     importWorking: null,
     importLength: 0,
+
+    prefetchingList: false,
   }
 
   constructor(props) {
@@ -160,10 +163,12 @@ class List extends React.PureComponent {
   }
 
   async reloadList(update = false) {
+    /*
     if(this._mounted)
       this.setState({ list: null });
     else
       this.state = { list: null, ...this.state };
+    */
 
     const query = update ? 'update' : 'cache';
     const list = await get(`/list/${this.props.match.params.id}?${query}`);
@@ -225,13 +230,16 @@ class List extends React.PureComponent {
       this.playIndex(0);
   }
 
-  prefetchList() {
+  async prefetchList() {
+    this.setState({ prefetchingList: true });
+    const promises = [];
     for(const id of this.state.list.entries) {
       const inst = this.props.store.get(id);
       if(inst && inst.status === 'ready' && !inst.cached)
-        this.props.prefetchEntry(id);
+        promises.push(this.props.prefetchEntry(id));
     }
-    return this.reloadList(true);
+    await Promise.all([this.reloadList(true), ...promises]);
+    this.setState({ prefetchingList: false });
   }
 
   async deleteEntry(e) {
@@ -240,8 +248,8 @@ class List extends React.PureComponent {
   }
 
   render() {
-    const { isPlaying, playingIndex, store, prefetchEntry, login } = this.props;
-    const { list, adding, importing, addTarget, addWorking, importTarget, importWorking, importLength } = this.state;
+    const { isPlaying, playingIndex, store, prefetchEntry, login, prefetching } = this.props;
+    const { list, adding, importing, addTarget, addWorking, importTarget, importWorking, importLength, prefetchingList } = this.state;
 
     let importText = 'Import';
     if(importWorking === 0)
@@ -251,6 +259,14 @@ class List extends React.PureComponent {
 
     if(list === null)
       return <div className="loading"></div>;
+
+    const prefetchingIcon = prefetchingList || list.entries.some(e => prefetching.has(e));
+    let prefetchBtn = <Icon onClick={() => this.prefetchList()}>get_app</Icon>;
+    if(prefetchingIcon) prefetchBtn = <Icon className="disabled rotate">sync</Icon>;
+    else if(list.cached && list.entries.every(e => {
+      let inst = store.get(e);
+      return !inst || inst.cached;
+    })) prefetchBtn = <Icon className="disabled">done</Icon>;
 
     return <div className="list">
       <div className="title">
@@ -264,11 +280,7 @@ class List extends React.PureComponent {
               </React.Fragment>
               : null }
               
-          { list.cached && list.entries.every(e => e.cached) ?
-              <Icon className="disabled">done</Icon>
-              :
-              <Icon onClick={() => this.prefetchList()}>get_app</Icon>
-          }
+          { prefetchBtn }
           { list.entries.map(e => store.get(e)).find(e => e && e.status === 'ready') !== undefined ?
               <Icon className="primary" onClick={() => this.playList()}>play_arrow</Icon> : null }
         </div>
@@ -337,6 +349,7 @@ const mapS2P = (state, props) => ({
   playingId: state.playing && state.playing.list.entries[state.playing.index],
   store: state.store,
   login: state.login,
+  prefetching: state.prefetching,
 });
 
 const mapD2P = (dispatch, props) => ({

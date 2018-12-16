@@ -5,6 +5,9 @@ export const TYPES = {
   PLAY_ENTRY: 'PLAY_ENTRY',
   SET_REPEAT: 'SET_REPEAT',
   LOGIN: 'LOGIN',
+
+  PREFETCH_STARTED: 'PREFETCH_STARTED',
+  PREFETCH_FINISHED: 'PREFETCH_FINISHED',
 };
 
 Object.freeze(TYPES);
@@ -29,13 +32,27 @@ export const login = () => ({
   type: TYPES.LOGIN,
 });
 
+export const prefetchStarted = id => ({
+  type: TYPES.PREFETCH_STARTED,
+  id,
+});
+
+export const prefetchFinished = id => ({
+  type: TYPES.PREFETCH_FINISHED,
+  id,
+});
+
 // Async actions
 const fetchQueue = new Set();
+const POLL_INTERVAL = 1000;
 let polling = false;
 
 export const fetchEntry = (eid, prefetch = false) =>
   async dispatch => {
     if(fetchQueue.has(eid)) return;
+
+    if(prefetch)
+      dispatch(prefetchStarted(eid));
 
     fetchQueue.add(eid);
     const query = prefetch ? 'update' : 'cache';
@@ -43,8 +60,11 @@ export const fetchEntry = (eid, prefetch = false) =>
     dispatch(cacheEntry(entry));
     fetchQueue.delete(eid);
 
-    if(!polling)
-      dispatch(pollEntry());
+    if(entry.status !== 'ready' && !polling)
+      setTimeout(() => dispatch(pollEntry()), POLL_INTERVAL);
+
+    if(prefetch)
+      dispatch(prefetchFinished(eid));
 
     return entry;
   };
@@ -64,7 +84,7 @@ const pollEntry = () =>
 
     const promises = keys.map(e => dispatch(fetchEntry(e)));
     await Promise.all(promises);
-    setTimeout(() => dispatch(pollEntry()), 1000);
+    setTimeout(() => dispatch(pollEntry()), POLL_INTERVAL);
   };
 
 export const prefetchEntry = eid =>

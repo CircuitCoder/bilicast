@@ -129,11 +129,12 @@ self.addEventListener('fetch', event => {
   if(resp !== null) event.respondWith(resp);
 });
 
-self.addEventListener('activate', () => {
+self.addEventListener('activate', event => {
   self.clients.matchAll({ type: 'window' }).then(clients => {
     for(const client of clients)
       client.navigate(client.url);
   });
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('message', ev => {
