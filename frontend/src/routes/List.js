@@ -265,6 +265,7 @@ class List extends React.PureComponent {
     const prefetchingIcon = prefetchingList || list.entries.some(e => prefetching.has(e));
     let prefetchBtn = <Icon onClick={() => this.prefetchList()}>get_app</Icon>;
     if(prefetchingIcon) prefetchBtn = <Icon className="disabled rotate">sync</Icon>;
+    else if(list.entries.length === 0) prefetchBtn = null;
     else if(list.cached && list.entries.every(e => {
       let inst = store.get(e);
       return !inst || inst.cached;
