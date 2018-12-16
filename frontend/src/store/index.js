@@ -5,6 +5,8 @@ import { createLogger } from 'redux-logger';
 
 import * as reducers from './reducers';
 
+import { artwork } from '../util';
+
 const handlers = combineReducers(reducers);
 
 // Disable logger when testing and on production
@@ -22,8 +24,17 @@ store.subscribe(() => {
     const inst = state.store.get(id);
 
     if(inst) {
-      document.title = `${inst.title} | ${state.playing.list.name} | Bilicast`;
+      const title = inst.single ? inst.title : inst.subtitle;
+      document.title = `${title} | ${state.playing.list.name} | Bilicast`;
       return;
+
+      if('mediaSession' in navigator)
+        navigator.mediaSession.metadata = new window.MediaMetadata({
+          title,
+          artist: inst.uploader,
+          album: state.playing.list.name,
+          artwork: [artwork(id)],
+        });
     }
   }
 
