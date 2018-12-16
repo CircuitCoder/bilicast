@@ -38,7 +38,7 @@ router.get('/playlist/:uid/:favid', authMiddleware, async ctx => {
 
 router.get('/auth', async ctx => {
   if(auth(ctx.request)) return ctx.body = { success: true };
-  else return { success: false };
+  else return ctx.body = { success: false };
 });
 
 export default router;
