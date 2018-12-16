@@ -124,6 +124,13 @@ class Root extends React.PureComponent {
     this.setupPrevHandler();
     this.setupNextHandler();
 
+    if(!this.props.playing)
+      navigator.mediaSession.playbackState = 'none';
+    else if(this.state.paused)
+      navigator.mediaSession.playbackState = 'paused';
+    else
+      navigator.mediaSession.playbackState = 'playing';
+
     if(!this.props.playingEntry) {
       this.stop();
       return;

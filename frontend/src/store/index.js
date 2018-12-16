@@ -32,7 +32,7 @@ store.subscribe(() => {
           title,
           artist: inst.uploader,
           album: state.playing.list.name,
-          artwork: [artwork(id)],
+          artwork: [{ src: artwork(id) }],
         });
       return;
     }
