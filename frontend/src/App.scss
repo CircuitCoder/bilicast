@@ -44,9 +44,33 @@ a {
     display: flex;
     flex: 1;
     justify-content: flex-end;
+    align-items: center;
 
     .material-icons {
       @extend %action-icon;
+    }
+
+    .icon-group {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      font-size: 14px;
+      cursor: pointer;
+
+      color: rgba(0,0,0,.54);
+
+      transition: color .2s ease;
+
+      .material-icons {
+        margin-right: 5px;
+      }
+
+      &:hover {
+        color: rgba(0,0,0,.87);
+        .material-icons {
+          opacity: .87;
+        }
+      }
     }
 
     > a {

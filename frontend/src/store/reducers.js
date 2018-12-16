@@ -50,3 +50,9 @@ export function recents(state = [], action) {
   }
   return state;
 }
+
+export function installer(state = null, action) {
+  if(action.type === TYPES.SET_INSTALLER)
+    return action.installer;
+  return state;
+}

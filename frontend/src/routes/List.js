@@ -3,7 +3,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { get, post, artwork } from '../util';
-import { fetchEntry, playEntry, prefetchEntry, queueRecent } from '../store/actions';
+import { fetchEntry, playEntry, prefetchEntry, queueRecent, install } from '../store/actions';
 
 import { NavLink } from 'react-router-dom';
 
@@ -250,7 +250,17 @@ class List extends React.PureComponent {
   }
 
   render() {
-    const { isPlaying, playingIndex, store, prefetchEntry, login, prefetching } = this.props;
+    const {
+      isPlaying,
+      playingIndex,
+      store,
+      prefetchEntry,
+      login,
+      prefetching,
+      canInstall,
+      doInstall,
+    } = this.props;
+
     const {
       loading,
       list,
@@ -270,6 +280,18 @@ class List extends React.PureComponent {
     else if(importWorking !== null)
       importText = `${importWorking}/${importLength}...`;
 
+    const navRegion = <React.Fragment>
+      { canInstall ? 
+          <div className="actions">
+            <Icon onClick={doInstall}>widgets</Icon>
+          </div>
+          : null }
+      <NavLink to="/">
+        <Icon className="home-btn">home</Icon>
+      </NavLink>
+    </React.Fragment>
+
+
     if(loading)
       return <div className="loading"></div>;
 
@@ -278,9 +300,7 @@ class List extends React.PureComponent {
         <div className="title">
           &nbsp;
           <div className="actions">
-            <NavLink to="/">
-              <Icon className="home-btn">home</Icon>
-            </NavLink>
+            { navRegion }
           </div>
         </div>
         <div className="list-empty list-empty-disabled">
@@ -303,9 +323,7 @@ class List extends React.PureComponent {
         <Icon>queue_music</Icon>
         { list.name }
         <div className="actions">
-          <NavLink to="/">
-            <Icon className="home-btn">home</Icon>
-          </NavLink>
+          { navRegion }
 
           { login ?
               <React.Fragment>
@@ -390,11 +408,13 @@ const mapS2P = (state, props) => ({
   store: state.store,
   login: state.login,
   prefetching: state.prefetching,
+  canInstall: state.installer !== null,
 });
 
 const mapD2P = (dispatch, props) => ({
   play: (list, index) => dispatch(playEntry(list, index)),
   prefetchEntry: id => dispatch(prefetchEntry(id)),
   requeueRecent: name => dispatch(queueRecent(props.match.params.id, name)),
+  doInstall: () => dispatch(install()),
 });
 export default connect(mapS2P, mapD2P)(List);

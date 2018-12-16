@@ -5,13 +5,21 @@ import { connect } from 'react-redux';
 
 import { NavLink, withRouter } from 'react-router-dom';
 
+import { install } from '../store/actions'
+
 import Icon from '../Icon';
 
-const Home = ({ recents, history }) => (
+const Home = ({ recents, history, canInstall, doInstall }) => (
   <div className="home">
     <div className="title">
       <Icon>home</Icon>
       Welcome!
+
+      { canInstall ? 
+          <div className="actions">
+            <div className="icon-group" onClick={doInstall}><Icon>widgets</Icon>Install as App</div>
+          </div>
+          : null }
     </div>
 
     <div className="input-hint">Jump to List (Enter)</div>
@@ -37,6 +45,11 @@ const Home = ({ recents, history }) => (
 );
 
 export default compose(
-  connect(state => ({ recents: state.recents, })),
+  connect(state => ({
+    recents: state.recents,
+    canInstall: state.installer !== null,
+  }), dispatch => ({
+    doInstall: () => dispatch(install()),
+  })),
   withRouter,
 )(Home);

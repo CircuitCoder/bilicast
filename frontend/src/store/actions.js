@@ -12,6 +12,8 @@ export const TYPES = {
 
   QUEUE_RECENT: 'QUEUE_RECENT',
   INIT_RECENTS: 'INIT_RECENTS',
+
+  SET_INSTALLER: 'SET_INSTALLER',
 };
 
 Object.freeze(TYPES);
@@ -59,6 +61,11 @@ export const queueRecent = (id, name) => ({
 export const initRecents = recents => ({
   type: TYPES.INIT_RECENTS,
   recents,
+});
+
+export const setInstaller = installer => ({
+  type: TYPES.SET_INSTALLER,
+  installer,
 });
 
 // Async actions
@@ -113,4 +120,11 @@ export const prefetchEntry = eid =>
     await Promise.all([art, content]);
 
     await dispatch(fetchEntry(eid, true));
+  };
+
+export const install = () =>
+  (dispatch, getState) => {
+    const installer = getState().installer;
+    dispatch(setInstaller(null));
+    installer.prompt();
   };

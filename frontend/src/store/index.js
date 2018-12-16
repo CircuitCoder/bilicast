@@ -4,7 +4,7 @@ import thunk from 'redux-thunk';
 import { createLogger } from 'redux-logger';
 
 import * as reducers from './reducers';
-import { initRecents } from './actions';
+import { initRecents, setInstaller } from './actions';
 
 import { artwork, saveRecents, loadRecents } from '../util';
 
@@ -47,6 +47,11 @@ store.subscribe(() => {
 
 loadRecents().then(recents => {
   store.dispatch(initRecents(recents));
+});
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  store.dispatch(setInstaller(e));
 });
 
 export default store;
