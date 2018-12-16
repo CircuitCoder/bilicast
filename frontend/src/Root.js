@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 
 import { BrowserRouter as Router, Route, Switch, NavLink } from 'react-router-dom';
 
-import { setRepeat, playEntry, fetchEntry } from './store/actions';
+import { setRepeat, playEntry, fetchEntry, login, logout } from './store/actions';
 
-import { artwork, music } from './util';
+import { artwork, music, savedAuth, unauth } from './util';
 
 import Icon from './Icon';
 
@@ -64,12 +64,15 @@ const mapD2P = dispatch => ({
   setRepeat: repeat => dispatch(setRepeat(repeat)),
   playEntry: (list, index) => dispatch(playEntry(list, index)),
   fetchEntry: id => dispatch(fetchEntry(id)),
+  doLogin: () => dispatch(login()),
+  doLogout: () => dispatch(logout()),
 });
 
 class Root extends React.PureComponent {
   state = {
     progress: 0,
     paused: false,
+    noauth: false,
   }
 
   constructor(props) {
@@ -92,6 +95,13 @@ class Root extends React.PureComponent {
       this.setupPrevHandler();
       this.setupNextHandler();
     }
+
+    savedAuth().then(result => {
+      if(result === null) {
+        this.setState({ noauth: true });
+        this.props.doLogin();
+      } else if(result) this.props.doLogin();
+    });
   }
 
   componentWillUnmount() {
@@ -216,6 +226,11 @@ class Root extends React.PureComponent {
     this.setState({ progress });
   }
 
+  async doLogout() {
+    await unauth();
+    this.props.doLogout();
+  }
+
   render() {
     const {
       playing,
@@ -228,7 +243,7 @@ class Root extends React.PureComponent {
       login,
     } = this.props;
 
-    const { progress, paused } = this.state;
+    const { progress, paused, noauth } = this.state;
 
     return (
       <Router>
@@ -274,9 +289,12 @@ class Root extends React.PureComponent {
             <div className="spanner"></div>
             <div className="actions">
               { login ? 
-                  <NavLink to="/new">
-                    <Icon>playlist_add</Icon>
-                  </NavLink>
+                  <React.Fragment>
+                    <NavLink to="/new">
+                      <Icon>playlist_add</Icon>
+                    </NavLink>
+                    { !noauth ? <Icon onClick={() => this.doLogout()}>power_settings_new</Icon> : null }
+                  </React.Fragment>
                   :
                   <NavLink to="/login">
                     <Icon>person</Icon>

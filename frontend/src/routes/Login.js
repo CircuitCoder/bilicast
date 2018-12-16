@@ -45,6 +45,8 @@ class Login extends React.PureComponent {
     if(ok) {
       this.props.doLogin();
       this.props.history.goBack();
+    } else {
+      alert('Try again!');
     }
   }
 }

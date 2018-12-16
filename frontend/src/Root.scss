@@ -131,10 +131,18 @@
 
   .actions {
     padding: 10px 20px;
-    padding-left: 0;
+    padding-left: 10px;
+    display: flex;
+    flex-direction: column;
+
+    > a {
+      font-size: 0;
+    }
 
     .material-icons {
       @extend %action-icon;
+      margin-left: 0;
+      margin-bottom: 5px;
     }
   }
 }

@@ -5,6 +5,7 @@ export const TYPES = {
   PLAY_ENTRY: 'PLAY_ENTRY',
   SET_REPEAT: 'SET_REPEAT',
   LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
 
   PREFETCH_STARTED: 'PREFETCH_STARTED',
   PREFETCH_FINISHED: 'PREFETCH_FINISHED',
@@ -30,6 +31,10 @@ export const setRepeat = repeat => ({
 
 export const login = () => ({
   type: TYPES.LOGIN,
+});
+
+export const logout = () => ({
+  type: TYPES.LOGOUT,
 });
 
 export const prefetchStarted = id => ({

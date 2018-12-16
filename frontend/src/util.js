@@ -56,11 +56,12 @@ if(window.indexedDB)
   });
 
 export async function auth(req) {
+  const headers = new Headers();
+  if(req) headers.append('Authorization', `Bearer ${req}`);
+
   const resp = await fetch(BACKEND + '/helper/auth', {
     method: 'GET',
-    headers: new Headers({
-      'Authorization': `Bearer ${req}`,
-    }),
+    headers,
   });
 
   const payload = await parseResp(resp);
@@ -71,7 +72,10 @@ export async function auth(req) {
     const db = await dbpromise;
     if(db) {
       const tx = db.transaction('persistent', 'readwrite');
-      tx.objectStore('persistent').put('passphrase', req);
+      if(req)
+        tx.objectStore('persistent').put(req, 'passphrase');
+      else
+        tx.objectStore('persistent').delete('passphrase');
       await tx.complete;
     }
 
@@ -82,18 +86,21 @@ export async function auth(req) {
 }
 
 export async function savedAuth() {
-  const db = await dbpromise();
+  const db = await dbpromise;
   if(!db) return false;
-  const passphrase = (await db.transaction('persistent').objectStore('persistent').get('passphrase')) || '';
+  const passphrase = await db.transaction('persistent').objectStore('persistent').get('passphrase');
 
-  return auth(passphrase);
+  const resp = await auth(passphrase);
+  if(!resp) return false;
+  if(!passphrase) return null; // Special value
+  return true;
 }
 
-export async function logout() {
-  const db = await dbpromise();
-  if(!db) return false;
+export async function unauth() {
+  const db = await dbpromise;
+  if(!db) return;
 
-  db.transaction('persistent', 'readwrite').objectStore('persistent').delete('key');
+  await db.transaction('persistent', 'readwrite').objectStore('persistent').delete('passphrase');
 }
 
 export function artwork(id) {
