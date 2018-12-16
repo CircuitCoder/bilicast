@@ -292,7 +292,7 @@ class List extends React.PureComponent {
     </React.Fragment>
 
 
-    if(loading)
+    if(loading && list === null)
       return <div className="loading"></div>;
 
     if(list === null)
