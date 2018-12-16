@@ -5,6 +5,8 @@ import { connect } from 'react-redux';
 import { get, post, artwork } from '../util';
 import { fetchEntry, playEntry, prefetchEntry, queueRecent } from '../store/actions';
 
+import { NavLink } from 'react-router-dom';
+
 import Icon from '../Icon';
 import Dialog from '../Dialog';
 
@@ -114,10 +116,8 @@ function parseTarget(target) {
 }
 
 function parseFavlist(url) {
-  console.log(url);
   const re = /^https?:\/\/space\.bilibili\.com\/(\d+)\/favlist\?fid=(\d+)$/;
   const match = url.match(re);
-  console.log('wtf');
 
   if(match) return {
     uid: match[1],
@@ -129,6 +129,7 @@ function parseFavlist(url) {
 
 class List extends React.PureComponent {
   state = {
+    loading: false,
     list: null,
     adding: false,
     importing: false,
@@ -163,19 +164,18 @@ class List extends React.PureComponent {
   }
 
   async reloadList(update = false) {
-    /*
     if(this._mounted)
-      this.setState({ list: null });
+      this.setState({ loading: true });
     else
-      this.state = { list: null, ...this.state };
-    */
+      this.state = { ...this.state, loading: true };
 
     const query = update ? 'update' : 'cache';
     const list = await get(`/list/${this.props.match.params.id}?${query}`);
 
-    this.setState({ list });
+    this.setState({ list, loading: false });
 
-    this.props.requeueRecent(list.name);
+    if(list)
+      this.props.requeueRecent(list.name);
   }
 
   async handleAdd() {
@@ -251,7 +251,18 @@ class List extends React.PureComponent {
 
   render() {
     const { isPlaying, playingIndex, store, prefetchEntry, login, prefetching } = this.props;
-    const { list, adding, importing, addTarget, addWorking, importTarget, importWorking, importLength, prefetchingList } = this.state;
+    const {
+      loading,
+      list,
+      adding,
+      importing,
+      addTarget,
+      addWorking,
+      importTarget,
+      importWorking,
+      importLength,
+      prefetchingList
+    } = this.state;
 
     let importText = 'Import';
     if(importWorking === 0)
@@ -259,8 +270,24 @@ class List extends React.PureComponent {
     else if(importWorking !== null)
       importText = `${importWorking}/${importLength}...`;
 
-    if(list === null)
+    if(loading)
       return <div className="loading"></div>;
+
+    if(list === null)
+      return <div className="list">
+        <div className="title">
+          &nbsp;
+          <div className="actions">
+            <NavLink to="/">
+              <Icon className="home-btn">home</Icon>
+            </NavLink>
+          </div>
+        </div>
+        <div className="list-empty list-empty-disabled">
+          <Icon>cloud_off</Icon>
+          Not Found!
+        </div>
+      </div>
 
     const prefetchingIcon = prefetchingList || list.entries.some(e => prefetching.has(e));
     let prefetchBtn = <Icon onClick={() => this.prefetchList()}>get_app</Icon>;
@@ -276,6 +303,10 @@ class List extends React.PureComponent {
         <Icon>queue_music</Icon>
         { list.name }
         <div className="actions">
+          <NavLink to="/">
+            <Icon className="home-btn">home</Icon>
+          </NavLink>
+
           { login ?
               <React.Fragment>
                 <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
@@ -308,7 +339,7 @@ class List extends React.PureComponent {
           :
           <div className="list-empty list-empty-disabled">
             <Icon>signal_cellular_no_sim</Icon>
-            Cats have gone, nothing's here
+            Cats Have Gone, Nothing's Here
           </div>
         ) : null }
       </div>

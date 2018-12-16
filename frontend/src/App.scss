@@ -48,6 +48,11 @@ a {
     .material-icons {
       @extend %action-icon;
     }
+
+    > a {
+      display: inline-flex;
+      align-items: center;
+    }
   }
 }
 
