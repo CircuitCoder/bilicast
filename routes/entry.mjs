@@ -19,16 +19,21 @@ const router = new Router();
 
 async function createEntries(av) {
   const descs = await util.getDesc(av);
-  const results = await Promise.all(descs.map((e, i) =>
-    Entry.findOneAndUpdate({
+  const single = descs.length === 1;
+  const results = await Promise.all(descs.map((e, i) => {
+    const titleSegs = e.title.split(` #${i+1}. `);
+    return Entry.findOneAndUpdate({
       source: av,
       page: i+1,
     }, {
       $setOnInsert: {
         dlTime: new Date().toISOString(),
         status: 'preparing',
-        title: e.title,
+        title: titleSegs[0],
+        subtitle: titleSegs[1],
         ref: e.url,
+
+        single,
       },
     }, {
       new: true,
@@ -37,7 +42,7 @@ async function createEntries(av) {
       upsert: true,
       rawResult: true,
     })
-  ));
+  }));
 
   return results.map((result, i) => {
     if(!result.ok) throw result.lastErrorObject;

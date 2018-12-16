@@ -8,6 +8,14 @@ import { fetchEntry, playEntry, prefetchEntry } from '../store/actions';
 import Icon from '../Icon';
 import Dialog from '../Dialog';
 
+function getEntryHint(entry) {
+  let category = entry.category || 'Loading...';
+  if(entry.single)
+    return `${entry.source} - ${category}`;
+  else
+    return `${entry.source} - P${entry.page} - ${category}`;
+}
+
 class EntryImpl extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -40,11 +48,23 @@ class EntryImpl extends React.PureComponent {
         }
       </div>
       <div className="entry-info">
-        <div className="entry-title">{ entry.title }</div>
-        <div className="entry-author">{ entry.uploader }</div>
+        { entry.single ?
+            <div className="entry-title">{ entry.title }</div>
+            :
+            <div className="entry-title-group">
+              <div className="entry-title-hint">
+                { entry.title }
+              </div>
+
+              <div className="entry-title-main">
+                { entry.subtitle }
+              </div>
+            </div>
+        }
+        <div className="entry-author"><Icon>person</Icon> { entry.uploader }</div>
         { entry.ref ?
-            <a href={entry.ref} target="_blank"><div className="entry-hint entry-hint-clickable">
-                { entry.source } - P{entry.page} - { entry.category }
+            <a href={entry.ref} target="_blank"><div className="entry-hint">
+              <Icon>link</Icon> <div class="entry-link-text">{ getEntryHint(entry) }</div>
             </div></a>
             :
             <div className="entry-hint">

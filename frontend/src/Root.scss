@@ -209,12 +209,42 @@
       text-overflow: ellipsis;
     }
 
+    .entry-title-group {
+      height: 35px;
+      margin-bottom: 5px;
+
+      .entry-title-hint {
+        line-height: 10px;
+        font-size: 8px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: rgba(0,0,0,.54);
+      }
+
+      .entry-title-main {
+        line-height: 25px;
+        font-size: 18px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: rgba(0,0,0,.87);
+      }
+    }
+
     .entry-author {
       font-size: 14px;
       color: rgba(0,0,0,.7);
       line-height: 20px;
       overflow: hidden;
       text-overflow: ellipsis;
+
+      display: flex;
+      align-items: center;
+
+      .material-icons {
+        line-height: 20px;
+        font-size: 18px;
+        margin-right: 2px;
+      }
     }
 
     .entry-hint {
@@ -224,8 +254,17 @@
       overflow: hidden;
       text-overflow: ellipsis;
 
-      &.entry-hint-clickable {
+      .entry-link-text {
         text-decoration: underline;
+      }
+
+      display: flex;
+      align-items: center;
+
+      .material-icons {
+        line-height: 20px;
+        font-size: 18px;
+        margin-right: 2px;
       }
     }
 
