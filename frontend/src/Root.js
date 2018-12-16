@@ -78,7 +78,52 @@ class Root extends React.PureComponent {
     this.audio = React.createRef();
   }
 
+  componentDidMount() {
+    if('mediaSession' in window.navigator) {
+      const session = window.navigator.mediaSession;
+      session.setActionHandler('play', () => {
+        this.play();
+      });
+
+      session.setActionHandler('pause', () => {
+        this.pause();
+      });
+
+      this.setupPrevHandler();
+      this.setupNextHandler();
+    }
+  }
+
+  componentWillUnmount() {
+    console.log('unmount');
+  }
+
+  setupPrevHandler() {
+    if(!('mediaSession' in window.navigator)) return;
+    const session = window.navigator.mediaSession;
+    if(this.props.prev)
+      session.setActionHandler('previoustrack', () => {
+        this.prev();
+      });
+    else
+      session.setActionHandler('previoustrack', null);
+  }
+
+  setupNextHandler() {
+    if(!('mediaSession' in window.navigator)) return;
+    const session = window.navigator.mediaSession;
+    if(this.props.next)
+      session.setActionHandler('nexttrack', () => {
+        this.next();
+      });
+    else
+      session.setActionHandler('nexttrack', null);
+  }
+
   componentDidUpdate(pp, ps) {
+    this.setupPrevHandler();
+    this.setupNextHandler();
+
     if(!this.props.playingEntry) {
       this.stop();
       return;

@@ -13,7 +13,8 @@ serviceWorker.unregister();
 
 // Register a service worker of my own
 window.addEventListener('load', () => {
-  navigator.serviceWorker.register(process.env.PUBLIC_URL + '/sw.js').then(reg => {
+  // if(!window.navigator.serviceWorker) return;
+  window.navigator.serviceWorker.register(process.env.PUBLIC_URL + '/sw.js').then(reg => {
     reg.onupdatefound = () => {
       const worker = reg.installing;
       if(worker === null)
