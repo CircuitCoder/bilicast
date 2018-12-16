@@ -26,7 +26,6 @@ store.subscribe(() => {
     if(inst) {
       const title = inst.single ? inst.title : inst.subtitle;
       document.title = `${title} | ${state.playing.list.name} | Bilicast`;
-      return;
 
       if('mediaSession' in navigator)
         navigator.mediaSession.metadata = new window.MediaMetadata({
@@ -35,6 +34,7 @@ store.subscribe(() => {
           album: state.playing.list.name,
           artwork: [artwork(id)],
         });
+      return;
     }
   }
 
