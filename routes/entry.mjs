@@ -122,7 +122,7 @@ async function download(av, dbid, desc) {
   });
 }
 
-router.get('/download/:av', async ctx => {
+router.get('/download/:av', util.authMiddleware, async ctx => {
   const handles = await createEntries(ctx.params.av);
 
   // Fire and forget

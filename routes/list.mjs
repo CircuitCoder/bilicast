@@ -7,9 +7,11 @@ const randomBytes = util.promisify(crypto.randomBytes);
 
 import List from '../db/List';
 
+import { authMiddleware } from '../util';
+
 const router = new Router();
 
-router.post('/', async ctx => {
+router.post('/', authMiddleware, async ctx => {
   const id = ctx.request.body.id || (await randomBytes(12)).toString('hex');
   const list = await List.create({
     _id: id,
@@ -23,7 +25,7 @@ router.get('/:id', async ctx => {
   return ctx.body = await List.findById(ctx.params.id).lean();
 });
 
-router.post('/:id/entries', async ctx => {
+router.post('/:id/entries', authMiddleware, async ctx => {
   const resp = await List.findOneAndUpdate({
     _id: ctx.params.id,
   }, {
@@ -35,7 +37,7 @@ router.post('/:id/entries', async ctx => {
 
 // TODO: support multiple entries?
 
-router.delete('/:id/entries/:eid', async ctx => {
+router.delete('/:id/entries/:eid', authMiddleware, async ctx => {
   const resp = await List.findOneAndUpdate({
     _id: ctx.params.id,
   }, {
