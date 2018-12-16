@@ -14,6 +14,7 @@ import {
   Home,
   New,
   List,
+  Login,
 } from './routes';
 
 import './Root.scss';
@@ -54,6 +55,8 @@ const mapS2P = state => {
 
     next: state.playing ? findNext(state) : null,
     prev: state.playing ? findPrev(state) : null,
+
+    login: state.login,
   };
 };
 
@@ -76,8 +79,10 @@ class Root extends React.PureComponent {
   }
 
   componentDidUpdate(pp, ps) {
-    if(!this.props.playingEntry)
+    if(!this.props.playingEntry) {
       this.stop();
+      return;
+    }
 
     if(pp.playingEntry && this.props.playingEntry === pp.playingEntry)
       return;
@@ -158,7 +163,17 @@ class Root extends React.PureComponent {
   }
 
   render() {
-    const { playing, repeating, setRepeat, playingEntry, playingEntryInst, prev, next } = this.props;
+    const {
+      playing,
+      repeating,
+      setRepeat,
+      playingEntry,
+      playingEntryInst,
+      prev,
+      next,
+      login,
+    } = this.props;
+
     const { progress, paused } = this.state;
 
     return (
@@ -168,6 +183,7 @@ class Root extends React.PureComponent {
             <Switch>
               <Route exact path="/" component={Home} />
               <Route exact path="/new" component={New} />
+              <Route exact path="/login" component={Login} />
               <Route exact path="/:id" component={List} />
             </Switch>
           </div>
@@ -203,9 +219,15 @@ class Root extends React.PureComponent {
             </div>
             <div className="spanner"></div>
             <div className="actions">
-              <NavLink to="/new">
-                <Icon>playlist_add</Icon>
-              </NavLink>
+              { login ? 
+                  <NavLink to="/new">
+                    <Icon>playlist_add</Icon>
+                  </NavLink>
+                  :
+                  <NavLink to="/login">
+                    <Icon>person</Icon>
+                  </NavLink>
+              }
             </div>
 
             <div className="audio">

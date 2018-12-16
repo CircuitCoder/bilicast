@@ -1,5 +1,7 @@
 import { BACKEND } from './config';
 
+let passphrase = null;
+
 async function parseResp(resp) {
   if(resp.status === 204) return null;
   else if(resp.status !== 200) throw resp.statusText;
@@ -8,14 +10,22 @@ async function parseResp(resp) {
   else return resp.text();
 }
 
+function buildHeaders() {
+  const result = new Headers({
+    'Content-Type': 'application/json',
+  });
+
+  if(passphrase !== null)
+    result.append('Authorization', `Bearer ${passphrase}`);
+
+  return result;
+}
+
 export async function post(endpoint, payload, method = 'POST') {
   const resp = await fetch(BACKEND + endpoint, {
     method,
     body: JSON.stringify(payload),
-    headers: new Headers({
-      'Content-Type': 'application/json',
-    }),
-    credentials: 'include',
+    headers: buildHeaders(),
   });
 
   return parseResp(resp);
@@ -24,13 +34,28 @@ export async function post(endpoint, payload, method = 'POST') {
 export async function get(endpoint, method = 'GET') {
   const resp = await fetch(BACKEND + endpoint, {
     method,
-    headers: new Headers({
-      'Content-Type': 'application/json',
-    }),
-    credentials: 'include',
+    headers: buildHeaders(),
   });
 
   return parseResp(resp);
+}
+
+export async function auth(req) {
+  const resp = await fetch(BACKEND + '/helper/auth', {
+    method: 'GET',
+    headers: new Headers({
+      'Authorization': `Bearer ${req}`,
+    }),
+  });
+
+  const payload = await parseResp(resp);
+
+  if(payload.success) {
+    passphrase = req;
+    return true;
+  }
+
+  return false;
 }
 
 export function artwork(id) {

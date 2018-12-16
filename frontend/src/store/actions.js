@@ -4,6 +4,7 @@ export const TYPES = {
   CACHE_ENTRY: 'CACHE_ENTRY',
   PLAY_ENTRY: 'PLAY_ENTRY',
   SET_REPEAT: 'SET_REPEAT',
+  LOGIN: 'LOGIN',
 };
 
 Object.freeze(TYPES);
@@ -22,6 +23,10 @@ export const playEntry = (list, index) => ({
 export const setRepeat = repeat => ({
   type: TYPES.SET_REPEAT,
   repeat,
+});
+
+export const login = () => ({
+  type: TYPES.LOGIN,
 });
 
 // Async actions

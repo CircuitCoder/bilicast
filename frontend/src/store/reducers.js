@@ -21,3 +21,9 @@ export function repeating(state = null, action) {
     return action.repeat;
   return state;
 }
+
+export function login(state = false, action) {
+  if(action.type === TYPES.LOGIN)
+    return true;
+  return state;
+}

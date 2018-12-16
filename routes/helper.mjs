@@ -2,9 +2,11 @@ import Router from 'koa-router';
 
 import request from 'request-promise-native';
 
+import { auth, authMiddleware } from '../util';
+
 const router = new Router();
 
-router.get('/playlist/:uid/:favid', async ctx => {
+router.get('/playlist/:uid/:favid', authMiddleware, async ctx => {
   const p1uri = `https://api.bilibili.com/x/space/fav/arc?vmid=${ctx.params.uid}&fid=${ctx.params.favid}&pn=1&order=fav_time`;
 
   const resp = await request({
@@ -32,6 +34,11 @@ router.get('/playlist/:uid/:favid', async ctx => {
   const agg = entries.reduce((acc, e) => acc.concat(e), []);
   agg.reverse();
   return ctx.body = agg;
+});
+
+router.get('/auth', async ctx => {
+  if(auth(ctx.request)) return ctx.body = { success: true };
+  else return { success: false };
 });
 
 export default router;

@@ -16,7 +16,7 @@ class EntryImpl extends React.PureComponent {
   }
 
   render() {
-    const { entry, onPlay, onDelete, onCache, isActive } = this.props;
+    const { entry, onPlay, onDelete, onCache, isActive, login } = this.props;
 
     let className = 'entry';
     if(this.props.className) className += ' ' + this.props.className;
@@ -61,7 +61,7 @@ class EntryImpl extends React.PureComponent {
                   :
                   <Icon onClick={onCache}>get_app</Icon>
               }
-              <Icon onClick={onDelete}>delete</Icon>
+              { login ? <Icon onClick={onDelete}>delete</Icon> : null }
             </React.Fragment>
             :
             <Icon className="disabled rotate">sync</Icon>
@@ -74,6 +74,7 @@ class EntryImpl extends React.PureComponent {
 const Entry = connect(
   (state, props) => ({
     entry: state.store.get(props.id),
+    login: state.login,
   }),
   (dispatch, props) => ({
     reload: () => dispatch(fetchEntry(props.id)),
@@ -219,7 +220,7 @@ class List extends React.PureComponent {
   }
 
   render() {
-    const { isPlaying, playingIndex, store, prefetchEntry } = this.props;
+    const { isPlaying, playingIndex, store, prefetchEntry, login } = this.props;
     const { list, adding, importing, addTarget, addWorking, importTarget, importWorking, importLength } = this.state;
 
     let importText = 'Import';
@@ -236,9 +237,14 @@ class List extends React.PureComponent {
         <Icon>queue_music</Icon>
         { list.name }
         <div className="actions">
-          <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
-          <Icon onClick={() => this.setState({ importing: true })}>subscriptions</Icon>
-          { list.cached ? 
+          { login ?
+              <React.Fragment>
+                <Icon onClick={() => this.setState({ adding: true })}>add</Icon>
+                <Icon onClick={() => this.setState({ importing: true })}>subscriptions</Icon>
+              </React.Fragment>
+              : null }
+              
+          { list.cached ? // TODO: all cached
               <Icon className="disabled">done</Icon>
               :
               <Icon onClick={() => this.prefetchList()}>get_app</Icon>
@@ -257,6 +263,7 @@ class List extends React.PureComponent {
           isActive={isPlaying && playingIndex === i}
         />)}
 
+      { /* Not login */ }
         { list.entries.length === 0 ?
             <div className="list-empty" onClick={() => this.setState({ adding: true })}>
               <Icon>add</Icon>
@@ -309,6 +316,7 @@ const mapS2P = (state, props) => ({
   playingIndex: state.playing && state.playing.index,
   playingId: state.playing && state.playing.list.entries[state.playing.index],
   store: state.store,
+  login: state.login,
 });
 
 const mapD2P = (dispatch, props) => ({

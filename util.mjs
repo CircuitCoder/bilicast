@@ -4,6 +4,8 @@ import request from 'request-promise-native';
 
 import logger from './logger';
 
+const PASSPHRASE = process.env.PASSPHRASE;
+
 export async function getDetail(av) {
   const match = av.match(/^av(\d+)$/);
   if(!match) throw new Error('Invalid AV format');
@@ -115,4 +117,16 @@ export function convertM4a(base) {
       else return reject();
     });
   });
+}
+
+export function auth(req) {
+  if(!PASSPHRASE) return true;
+  return req.header['Authorization'] === `Bearer ${PASSPHRASE}`;
+}
+
+export async function authMiddleware(ctx, next) {
+  if(auth(ctx.request)) return next();
+
+  ctx.status = 403;
+  ctx.body = "Authorization Failed";
 }
