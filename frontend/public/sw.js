@@ -5,7 +5,7 @@ function isBackend(req) {
 
   if(url.pathname.indexOf('/entry') === 0
     || url.pathname.indexOf('/list') === 0
-    || url.pathname.indexOf('/store') === 0)
+    || url.pathname.indexOf('/store') === 0
     || url.pathname.indexOf('/helper') === 0)
     return true;
 

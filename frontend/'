@@ -181,8 +181,6 @@ class List extends React.PureComponent {
 
     if(list)
       this.props.requeueRecent(list.name);
-
-    return list;
   }
 
   async handleAdd() {
@@ -323,7 +321,7 @@ class List extends React.PureComponent {
     else if(list.cached && list.entries.every(e => {
       let inst = store.get(e);
       return !inst || inst.cached;
-    })) prefetchBtn = <Icon onClick={() => this.reloadList(true)}>sync</Icon>;
+    })) prefetchBtn = <Icon onClick{() => this.prefetchList()}>sync</Icon>;
 
     return <div className="list">
       <div className="title">
