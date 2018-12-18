@@ -33,6 +33,8 @@ async function createEntries(av) {
         subtitle: titleSegs[1],
         ref: e.url,
 
+        desc: descs[i],
+
         single,
       },
     }, {
@@ -57,61 +59,75 @@ async function createEntries(av) {
   });
 }
 
-async function download(av, dbid, desc) {
+const STAGES = {
+  preparing: 0,
+  downloading: 1,
+  converting: 2,
+  ready: 3,
+};
+
+async function download(av, dbid, desc, status = 'preparing') {
+  if(status === 'ready') return;
+
   const container = path.resolve(basedir, `../store/${dbid}`);
-  await mkdir(container);
 
-  logger.info(`Download from ${av}`);
-  const detail = await util.getDetail(av);
-  logger.debug(detail);
+  if(STAGES[status] <= STAGES.preparing) {
+    await mkdir(container);
 
-  await new Promise(resolve => 
-    request(detail.View.pic)
-      .on('end', resolve)
-      .pipe(fs.createWriteStream(path.join(container, 'art.jpg'))) // TODO: other ext
-  );
+    logger.info(`Download from ${av}`);
+    const detail = await util.getDetail(av);
+    logger.debug(detail);
 
-  await Entry.findOneAndUpdate({
-    _id: dbid,
-  }, {
-    $set: {
-      status: 'downloading',
-      uploader: detail.Card.card.name,
-      category: detail.View.tname,
-    },
-  }, {
-    runValidators: true,
-  });
+    await new Promise(resolve => 
+      request(detail.View.pic)
+        .on('end', resolve)
+        .pipe(fs.createWriteStream(path.join(container, 'art.jpg'))) // TODO: other ext
+    );
 
-  // Selecting best source
-  const source = Object.keys(desc.streams).reduce((acc, i) => {
-    if(desc.streams[i].container !== 'flv') return acc;
-    if(acc === null) return { format: i, ...desc.streams[i] };
-    if(desc.streams[i].size > acc.size) return { format: i, ...desc.streams[i] };
-    return acc;
-  }, null);
+    await Entry.findOneAndUpdate({
+      _id: dbid,
+    }, {
+      $set: {
+        status: 'downloading',
+        uploader: detail.Card.card.name,
+        category: detail.View.tname,
+      },
+    }, {
+      runValidators: true,
+    });
+  }
 
-  await Entry.findOneAndUpdate({
-    _id: dbid,
-  }, {
-    $set: {
-      ref: desc.url,
-    },
-  }, {
-    runValidators: true,
-  });
+  if(STAGES[status] <= STAGES.downloading) {
+    // Selecting best source
+    const source = Object.keys(desc.streams).reduce((acc, i) => {
+      if(desc.streams[i].container !== 'flv') return acc;
+      if(acc === null) return { format: i, ...desc.streams[i] };
+      if(desc.streams[i].size > acc.size) return { format: i, ...desc.streams[i] };
+      return acc;
+    }, null);
 
-  await util.downloadTo(desc.url, source.format, container);
+    await Entry.findOneAndUpdate({
+      _id: dbid,
+    }, {
+      $set: {
+        ref: desc.url,
+      },
+    }, {
+      runValidators: true,
+    });
 
-  await Entry.findOneAndUpdate({
-    _id: dbid,
-  }, {
-    $set: {
-      status: 'converting',
-    },
-  }, {
-    runValidators: true,
-  });
+    await util.downloadTo(desc.url, source.format, container);
+
+    await Entry.findOneAndUpdate({
+      _id: dbid,
+    }, {
+      $set: {
+        status: 'converting',
+      },
+    }, {
+      runValidators: true,
+    });
+  }
 
   await util.convertMp4(container);
   await util.convertM4a(container);
@@ -126,6 +142,45 @@ async function download(av, dbid, desc) {
     runValidators: true,
   });
 }
+
+async function scopedDownload(av, dbid, desc, status = 'preparing') {
+  let lastStatus = status;
+  while(true) {
+    try {
+      await download(av, dbid, desc, lastStatus);
+      break;
+    } catch(e) {
+      console.error(e);
+
+      const dbinst = await Entry.findById(dbid, { status: 1 }).lean();
+      lastStatus = dbinst.status;
+    }
+  }
+}
+
+// Kickoff all unfinished downloads
+async function housecleanSingle(entry) {
+  console.log(`Got unfinished job: ${entry._id}`);
+  if(!entry.desc) {
+    const descs = await util.getDesc(entry.source);
+    const desc = descs[entry.page-1];
+
+    entry.desc = desc;
+    await entry.save();
+  }
+
+  await scopedDownload(entry.source, entry._id, entry.desc, entry.status);
+}
+
+async function houseclean() {
+  const insts = await Entry.find({
+    status: { $ne: 'ready' },
+  });
+
+  await Promise.all(insts.map(housecleanSingle));
+}
+
+houseclean();
 
 router.get('/download/:av', util.authMiddleware, async ctx => {
   const handles = await createEntries(ctx.params.av);

@@ -12,6 +12,7 @@ export default mongoose.model('Entry', {
   page: Number,
   ref: String,
 
+  desc: Object, // Backlog
   dlTime: String, // ISO TS
 
   inactive: {
