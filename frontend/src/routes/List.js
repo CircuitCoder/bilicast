@@ -18,15 +18,32 @@ function getEntryHint(entry) {
     return `${entry.source} - P${entry.page} - ${category}`;
 }
 
+const ENTRY_HEIGHT = 100 + 10;
+
 class EntryImpl extends React.PureComponent {
+  state = {
+    lifted: false,
+  }
+
   constructor(props) {
     super(props);
 
     if(!this.props.entry) this.props.reload();
+
+    this.moveTimeout = false;
   }
 
   render() {
-    const { entry, onPlay, onDelete, onCache, isActive, login, prefetching } = this.props;
+    const {
+      entry,
+      onPlay,
+      onDelete,
+      onCache,
+      onArtDrag,
+      isActive,
+      login,
+      prefetching
+    } = this.props;
 
     let className = 'entry';
     if(this.props.className) className += ' ' + this.props.className;
@@ -34,17 +51,21 @@ class EntryImpl extends React.PureComponent {
     if(isActive) className += ' active';
 
     if(!entry) return (
-      <div className={className}>
+      <div className={className} style={this.props.style}>
         <div className="loading"></div>
       </div>
     );
 
     let prefetchingIcon = <Icon onClick={onCache}>get_app</Icon>;
     if(prefetching) prefetchingIcon = <Icon className="disabled rotate">sync</Icon>;
-    else if(entry.cached) prefetchingIcon = <Icon className="disabled">done</Icon>
+    else if(entry.cached) prefetchingIcon = <Icon className="disabled">done</Icon>;
 
-    return <div className={className}>
-      <div className="entry-artwork">
+    return <div className={className} style={this.props.style}>
+      <div
+        className="entry-artwork"
+        onDragStart={onArtDrag}
+        draggable="true"
+      >
         { entry.status !== 'preparing' ?
             <div style={{backgroundImage: `url(${artwork(entry._id)})`}} className="entry-artwork-internal" />
             :
@@ -142,12 +163,16 @@ class List extends React.PureComponent {
     importLength: 0,
 
     prefetchingList: false,
+
+    moving: null,
+    movingTo: null,
   }
 
   constructor(props) {
     super(props);
 
     this.reloadList();
+    this.stagedMove = null;
   }
 
   componentDidUpdate(pp) {
@@ -157,10 +182,26 @@ class List extends React.PureComponent {
 
   componentDidMount() {
     this._mounted = true;
+
+    this.moveListener = ev => {
+      this.processInput(ev);
+    };
+
+    this.upListener = ev => {
+      this.commitMove();
+    };
+
+    console.log('listen');
+
+    window.addEventListener('mousemove', this.moveListener);
+    window.addEventListener('mouseup', this.upListener);
   }
 
   componentWillUnmount() {
     this._mounted = false;
+
+    window.removeEventListener('mousemove', this.moveListener);
+    window.removeEventListener('mouseup', this.upListener);
   }
 
   async reloadList(update = false) {
@@ -256,6 +297,58 @@ class List extends React.PureComponent {
     return this.reloadList(true);
   }
 
+  // Moving
+  startMove(i, ev) {
+    ev.preventDefault();
+    this.startY = ev.clientY;
+    this.setState({ moving: i, movingTo: i });
+  }
+
+  commitMove() {
+    this.setState({ moving: null, movingTo: null });
+  }
+
+  processInput(ev) {
+    if(this.state.moving === null)
+      return;
+
+    let diff = ev.clientY - this.startY;
+
+    let neg = diff < 0;
+    if(neg) diff = -diff;
+
+    let incr = Math.floor(0.5 + diff / ENTRY_HEIGHT);
+    if(neg) incr = -incr;
+    let newPos = this.state.moving + incr;
+    if(newPos < 0) newPos = 0;
+    else if(newPos >= this.state.list.entries.length) newPos = this.state.list.entries.length-1;
+
+    console.log(newPos);
+
+    this.setState({ movingTo: newPos });
+  }
+
+  getEntryStyles(i) {
+    if(this.state.moving === null) return {};
+
+    if(i === this.state.moving) return { transform: this.getMovingTransform() };
+    else return { transform: this.getOthersTransform(i) };
+  }
+
+  getMovingTransform() {
+    return `translateY(${(this.state.movingTo - this.state.moving) * ENTRY_HEIGHT}px)`;
+  }
+
+  getOthersTransform(i) {
+    if(i < this.state.moving && i < this.state.movingTo) return 'translateY(0)';
+    if(i > this.state.moving && i > this.state.movingTo) return 'translateY(0)';
+
+    if(i < this.state.moving)
+      return `translateY(${ENTRY_HEIGHT}px)`
+    else
+      return `translateY(-${ENTRY_HEIGHT}px)`
+  }
+
   render() {
     const {
       isPlaying,
@@ -278,7 +371,8 @@ class List extends React.PureComponent {
       importTarget,
       importWorking,
       importLength,
-      prefetchingList
+      prefetchingList,
+      moving,
     } = this.state;
 
     let importText = 'Import';
@@ -348,10 +442,13 @@ class List extends React.PureComponent {
         { list.entries.map((e, i) => <Entry
           key={e}
           id={e}
+          className={i === moving ? 'moving' : ''}
+          style={this.getEntryStyles(i)}
           onPlay={() => this.playIndex(i)}
           onDelete={() => this.deleteEntry(e)}
           onCache={() => prefetchEntry(e)}
           isActive={isPlaying && playingIndex === i}
+          onArtDrag={ev => this.startMove(i, ev)}
         />)}
 
         { /* Not login */ }

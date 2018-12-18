@@ -247,16 +247,22 @@
 
     border-radius: 4px;
     box-shadow: rgba(0,0,0,.3) 0 2px 6px;
-    border-left: grayscale($primary) 5px solid;
+    border-left: grayscale($primary) 10px solid;
 
     margin-bottom: 10px;
 
-    transition: border-left-color .2s ease;
+    transition: border-left-color .2s ease, box-shadow .2s ease, transform .2s ease;
 
     overflow: hidden;
 
     &.active {
       border-left-color: $primary;
+    }
+
+    &.moving {
+      box-shadow: rgba(0,0,0,.3) 0 4px 12px;
+      border-left-color: rgba(grayscale($primary), 0.5);
+      z-index: 10;
     }
 
     .entry-info {
