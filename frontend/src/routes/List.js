@@ -65,6 +65,7 @@ class EntryImpl extends React.PureComponent {
     else if(entry.cached) prefetchingIcon = <Icon className="disabled">done</Icon>;
 
     return <div className={className} style={this.props.style}>
+      <div className="entry-border" />
       <div
         className="entry-artwork"
         onDragStart={onArtDrag}
@@ -170,6 +171,7 @@ class List extends React.PureComponent {
 
     moving: null,
     movingTo: null,
+    updating: false,
   }
 
   constructor(props) {
@@ -222,7 +224,7 @@ class List extends React.PureComponent {
     window.removeEventListener('scroll', this.scrollListener);
   }
 
-  async reloadList(update = false) {
+  async reloadList(update = false, set = true) {
     if(this._mounted)
       this.setState({ loading: true });
     else
@@ -236,7 +238,8 @@ class List extends React.PureComponent {
       list = null;
     }
 
-    this.setState({ list, loading: false });
+    if(set)
+      this.setState({ list, loading: false });
 
     if(list)
       this.props.requeueRecent(list.name);
@@ -323,13 +326,33 @@ class List extends React.PureComponent {
     this.setState({ moving: i, movingTo: i });
   }
 
-  commitMove() {
-    this.setState({ moving: null, movingTo: null });
+  async commitMove() {
+    if(this.state.moving === null) return;
+    const { movingTo } = this.state;
+
+    await post(`/list/${this.props.match.params.id}/entries/move`, {
+      from: this.state.moving,
+      to: movingTo,
+    });
+
+    const list = await this.reloadList(true, false);
+    // await this.reloadList(true);
+
+    this.setState({ updating: true });
+    this.setState({ list, loading: false, movingTo, moving: movingTo });
+
+    setTimeout(() => {
+      this.setState({ updating: false });
+      this.setState({ movingTo: null, moving: null });
+    });
   }
 
   processInput(ev) {
     if(this.state.moving === null) {
       this.scrolling = null;
+      return;
+    } else if(this.state.updating) {
+      this.scolling = null;
       return;
     }
 
@@ -430,6 +453,7 @@ class List extends React.PureComponent {
       importLength,
       prefetchingList,
       moving,
+      updating,
     } = this.state;
 
     let importText = 'Import';
@@ -476,7 +500,10 @@ class List extends React.PureComponent {
       return !inst || inst.cached;
     })) prefetchBtn = <Icon onClick={() => this.reloadList(true)}>sync</Icon>;
 
-    return <div className="list">
+    let className = 'list';
+    if(updating) className += ' updating';
+
+    return <div className={className}>
       <div className="title">
         <Icon>queue_music</Icon>
         { list.name }

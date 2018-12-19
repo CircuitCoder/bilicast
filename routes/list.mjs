@@ -47,4 +47,26 @@ router.delete('/:id/entries/:eid', authMiddleware, async ctx => {
   else return ctx.status = 404;
 });
 
+router.post('/:id/entries/move', authMiddleware, async ctx => {
+  const { from, to } = ctx.request.body;
+  if(from === to) return ctx.status = 204;
+
+  const { entries } = await List.findById(ctx.params.id, { entries: 1 }).lean();
+  const target = entries[from];
+  if(from < to)
+    for(let i = from; i < to; ++i)
+      entries[i] = entries[i+1];
+  else
+    for(let i = from; i > to; --i)
+      entries[i] = entries[i-1];
+
+  entries[to] = target;
+  await List.findOneAndUpdate({
+    _id: ctx.params.id,
+  }, {
+    $set: { entries },
+  });
+  ctx.status = 204;
+});
+
 export default router;
