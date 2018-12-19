@@ -19,6 +19,10 @@ function getEntryHint(entry) {
 }
 
 const ENTRY_HEIGHT = 100 + 10;
+const SCROLL_ZONE_WIDTH = 200;
+const FAST_SCROLL_ZONE_WIDTH = 75;
+const SCROLL_SPEED = 5;
+const FAST_SCROLL_SPEED = 10;
 
 class EntryImpl extends React.PureComponent {
   state = {
@@ -172,7 +176,7 @@ class List extends React.PureComponent {
     super(props);
 
     this.reloadList();
-    this.stagedMove = null;
+    this.scrolling = null;
   }
 
   componentDidUpdate(pp) {
@@ -191,10 +195,23 @@ class List extends React.PureComponent {
       this.commitMove();
     };
 
+    this.scrollListener = ev => {
+      this.recalcMovingTarget();
+    };
+
     console.log('listen');
 
     window.addEventListener('mousemove', this.moveListener);
     window.addEventListener('mouseup', this.upListener);
+    window.addEventListener('scroll', this.scrollListener);
+
+    const frame = () => {
+      if(!this._mounted) return;
+      this.scroll();
+      requestAnimationFrame(frame);
+    };
+
+    requestAnimationFrame(frame);
   }
 
   componentWillUnmount() {
@@ -202,6 +219,7 @@ class List extends React.PureComponent {
 
     window.removeEventListener('mousemove', this.moveListener);
     window.removeEventListener('mouseup', this.upListener);
+    window.removeEventListener('scroll', this.scrollListener);
   }
 
   async reloadList(update = false) {
@@ -301,6 +319,7 @@ class List extends React.PureComponent {
   startMove(i, ev) {
     ev.preventDefault();
     this.startY = ev.clientY;
+    this.diffY = 0;
     this.setState({ moving: i, movingTo: i });
   }
 
@@ -309,10 +328,50 @@ class List extends React.PureComponent {
   }
 
   processInput(ev) {
-    if(this.state.moving === null)
+    if(this.state.moving === null) {
+      this.scrolling = null;
       return;
+    }
 
-    let diff = ev.clientY - this.startY;
+    // Calculate newPos
+    this.curY = ev.clientY;
+
+    let scrolling = null;
+    if(ev.clientY <= FAST_SCROLL_ZONE_WIDTH)
+      scrolling = 'fast-up';
+    else if(ev.clientY >= window.innerHeight - FAST_SCROLL_ZONE_WIDTH)
+      scrolling = 'fast-down';
+    else if(ev.clientY <= SCROLL_ZONE_WIDTH)
+      scrolling = 'up';
+    else if(ev.clientY >= window.innerHeight - SCROLL_ZONE_WIDTH)
+      scrolling = 'down';
+
+    this.scrolling = scrolling;
+
+    this.recalcMovingTarget();
+  }
+
+  scroll() {
+    if(this.scrolling === null) return;
+    const original = window.scrollY;
+
+    if(this.scrolling === 'fast-up')
+      window.scrollBy(0, -FAST_SCROLL_SPEED);
+    else if(this.scrolling === 'fast-down')
+      window.scrollBy(0, FAST_SCROLL_SPEED);
+    else if(this.scrolling === 'up')
+      window.scrollBy(0, -SCROLL_SPEED);
+    else
+      window.scrollBy(0, SCROLL_SPEED);
+
+    const diff = window.scrollY - original;
+    this.diffY += diff;
+  }
+
+  recalcMovingTarget() {
+    if(this.state.moving === null) return;
+
+    let diff = this.curY + this.diffY - this.startY;
 
     let neg = diff < 0;
     if(neg) diff = -diff;
@@ -322,8 +381,6 @@ class List extends React.PureComponent {
     let newPos = this.state.moving + incr;
     if(newPos < 0) newPos = 0;
     else if(newPos >= this.state.list.entries.length) newPos = this.state.list.entries.length-1;
-
-    console.log(newPos);
 
     this.setState({ movingTo: newPos });
   }

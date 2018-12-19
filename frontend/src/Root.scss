@@ -263,6 +263,10 @@
       box-shadow: rgba(0,0,0,.3) 0 4px 12px;
       border-left-color: rgba(grayscale($primary), 0.5);
       z-index: 10;
+
+      .entry-artwork {
+        cursor: grabbing;
+      }
     }
 
     .entry-info {
@@ -344,6 +348,8 @@
     .entry-artwork {
       width: 140px;
       transition: filter .5s ease;
+
+      cursor: grab;
     }
 
     .entry-artwork-internal {
