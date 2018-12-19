@@ -337,10 +337,11 @@ class List extends React.PureComponent {
       to: movingTo,
     });
 
+    this.setState({ updating: true });
+
     const list = await this.reloadList(true, false);
     // await this.reloadList(true);
 
-    this.setState({ updating: true });
     this.setState({ list, loading: false, movingTo, moving: movingTo });
 
     setTimeout(() => {
