@@ -332,12 +332,12 @@ class List extends React.PureComponent {
     if(this.state.moving === null) return;
     const { movingTo } = this.state;
 
+    this.setState({ updating: true });
+
     await post(`/list/${this.props.match.params.id}/entries/move`, {
       from: this.state.moving,
       to: movingTo,
     });
-
-    this.setState({ updating: true });
 
     const list = await this.reloadList(true, false);
     // await this.reloadList(true);
