@@ -320,6 +320,8 @@ class List extends React.PureComponent {
 
   // Moving
   startMove(i, ev) {
+    if(!this.props.login) return;
+
     ev.preventDefault();
     this.startY = ev.clientY;
     this.diffY = 0;
@@ -502,6 +504,7 @@ class List extends React.PureComponent {
 
     let className = 'list';
     if(updating) className += ' updating';
+    if(login) className += ' can-drag';
 
     return <div className={className}>
       <div className="title">

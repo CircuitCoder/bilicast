@@ -272,10 +272,6 @@
       box-shadow: rgba(0,0,0,.3) 0 4px 12px;
       z-index: 10;
 
-      .entry-artwork {
-        cursor: grabbing;
-      }
-
       .entry-border {
         opacity: .5;
       }
@@ -360,8 +356,6 @@
     .entry-artwork {
       width: 140px;
       transition: filter .5s ease;
-
-      cursor: grab;
     }
 
     .entry-artwork-internal {
@@ -397,6 +391,20 @@
   &.updating {
     .entry {
       transition-property: box-shadow;
+    }
+  }
+
+  &.can-drag {
+    .entry {
+      &.moving {
+        .entry-artwork {
+          cursor: grabbing;
+        }
+      }
+
+      .entry-artwork {
+        cursor: grab;
+      }
     }
   }
 }
