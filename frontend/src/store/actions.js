@@ -77,10 +77,15 @@ export const fetchEntry = (eid, prefetch = false) =>
   async dispatch => {
     if(fetchQueue.has(eid)) return;
 
-    if(prefetch)
-      dispatch(prefetchStarted(eid));
-
     fetchQueue.add(eid);
+
+    if(prefetch) {
+      dispatch(prefetchStarted(eid));
+      const art = get(`/store/${eid}/art.jpg?update`);
+      const content = get(`/store/${eid}/content.m4a?update`);
+      await Promise.all([art, content]);
+    }
+
     const query = prefetch ? 'update' : 'cache';
     const entry = await get(`/entry/${eid}?${query}`);
     dispatch(cacheEntry(entry));
@@ -115,10 +120,6 @@ const pollEntry = () =>
 
 export const prefetchEntry = eid =>
   async dispatch => {
-    const art = get(`/store/${eid}/art.jpg?update`);
-    const content = get(`/store/${eid}/content.m4a?update`);
-    await Promise.all([art, content]);
-
     await dispatch(fetchEntry(eid, true));
   };
 
