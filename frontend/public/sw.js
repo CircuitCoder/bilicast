@@ -47,7 +47,8 @@ function fromCache(req) {
     return serveIndex();
 
   return caches.match(req).then(resp => {
-    if(resp) return resp;
+    if(resp)
+      return resp;
 
     return fetch(req).then(liveresp =>
       caches.open('v1').then(cache => {
@@ -74,9 +75,30 @@ async function fetchBackend(req) {
 
   if(queries.includes('cache') && !queries.includes('update')) {
     console.log(`Fetching from cache: ${liveReq.url}`);
-    const slot = await caches.match(liveReq);
-    if(slot) return slot;
-    else console.log('Missed');
+    const resp = await caches.match(liveReq);
+    if(resp) {
+      // Range: https://bugs.chromium.org/p/chromium/issues/detail?id=575357#c10
+      const range = req.headers.get('Range');
+      console.log(range);
+      if(!range)
+        return resp;
+
+      const startPos = Number(range.match(/^bytes\=(\d+)\-/)[1]);
+      console.log(startPos);
+
+      const ab = await resp.arrayBuffer();
+
+      const headers = resp.headers;
+      headers.append('Content-Range', `bytes ${startPos}-${ab.byteLength-1}/${ab.byteLength}`);
+      return new Response(
+        ab.slice(startPos),
+        {
+          status: 206,
+          statusText: 'Partial Content',
+          headers,
+        },
+      );
+    } else console.log('Missed');
   }
 
   const live = await fetch(liveReq);
