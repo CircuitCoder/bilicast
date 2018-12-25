@@ -49,6 +49,26 @@
       height: 100%;
       width: 100%;
     }
+
+    .progress-phantom {
+      position: absolute;
+      left: 0;
+      top: 0;
+
+      background: black;
+      opacity: .2;
+      height: 100%;
+      width: 100%;
+
+      display: none;
+    }
+
+    &.playing-progress {
+      cursor: pointer;
+      &:hover .progress-phantom {
+        display: block;
+      }
+    }
   }
 
   .playing {

@@ -71,6 +71,7 @@ const mapD2P = dispatch => ({
 class Root extends React.PureComponent {
   state = {
     progress: 0,
+    phantomProgress: 0,
     paused: false,
     noauth: false,
   }
@@ -231,6 +232,21 @@ class Root extends React.PureComponent {
     this.props.doLogout();
   }
 
+  updatePhantomProgress(ev) {
+    const ratio = ev.clientX / ev.target.offsetWidth;
+    this.setState({ phantomProgress: ratio });
+  }
+
+  seek(ev) {
+    const ratio = ev.clientX / ev.target.offsetWidth;
+    const audio = this.audio.current;
+    if(!audio) return;
+
+    console.log(audio.duration * ratio);
+
+    audio.currentTime = audio.duration * ratio;
+  }
+
   render() {
     const {
       playing,
@@ -243,7 +259,7 @@ class Root extends React.PureComponent {
       login,
     } = this.props;
 
-    const { progress, paused, noauth } = this.state;
+    const { progress, phantomProgress, paused, noauth } = this.state;
 
     return (
       <Router>
@@ -280,9 +296,18 @@ class Root extends React.PureComponent {
                 </div>
                 : null
             }
-            <div className="progress">
+            <div
+              className={playing ? "progress playing-progress" : "progress"}
+              onMouseEnter={ev => this.updatePhantomProgress(ev)}
+              onMouseMove={ev => this.updatePhantomProgress(ev)}
+              onClick={ev => this.seek(ev)}
+            >
               <div className="progress-inner" style={{
                 transform: `translateX(-${playing ? (1 - progress) * 100 : 0}%)`,
+              }}>
+              </div>
+              <div className="progress-phantom" style={{
+                transform: `translateX(-${(1 - phantomProgress) * 100}%)`,
               }}>
               </div>
             </div>
