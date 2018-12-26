@@ -43,8 +43,9 @@ function fromCache(req) {
   const url = new URL(req.url);
   const pn = url.pathname;
 
-  if(pn === '' || pn === '/' || pn === '/new' || pn === '/login' || pn.split('/').length === 2)
-    return serveIndex();
+  if(url.host.indexOf('fonts') === -1)
+    if(pn === '' || pn === '/' || pn === '/new' || pn === '/login' || pn.split('/').length === 2)
+      return serveIndex();
 
   return caches.match(req).then(resp => {
     if(resp)
