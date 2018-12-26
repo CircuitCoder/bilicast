@@ -128,15 +128,29 @@
       }
     }
 
+    .dash {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .timer {
+      font-size: 10px;
+      line-height: 14px;
+      text-align: center;
+      font-family: "Roboto Mono";
+      color: rgba(0,0,0,.38);
+    }
+
     .control {
-      padding: 10px 20px;
+      padding: 0 20px 10px 20px;
       display: flex;
       align-items: center;
       justify-content: center;
 
       .material-icons {
         @extend %action-icon;
-        margin: 0 5px;
+        margin: 0;
         font-size: 32px;
       }
 

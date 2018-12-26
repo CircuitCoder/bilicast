@@ -45,6 +45,23 @@ function repeatIcon(cur) {
   return 'repeat';
 }
 
+function formatTimer(time, ref) {
+  const hasHour = ref >= 3600;
+
+  if(hasHour) {
+    const refHourLen = Math.floor(ref / 3600).length;
+    const hour = Math.floor(time / 3600).toString().padStart(refHourLen, '0');
+    const min = (Math.floor(time / 60) % 60).toString().padStart(2, '0');
+    const sec = Math.round(time % 60).toString().padStart(2, '0');
+    return `${hour}:${min}:${sec}`;
+  } else {
+    const refMinLen = Math.floor(ref / 60).length;
+    const min = Math.floor(time / 60).toString().padStart(refMinLen, '0');
+    const sec = Math.round(time % 60).toString().padStart(2, '0');
+    return `${min}:${sec}`;
+  }
+}
+
 const mapS2P = state => {
   const playingEntry = state.playing ? state.playing.list.entries[state.playing.index] : null;
   return {
@@ -72,6 +89,7 @@ class Root extends React.PureComponent {
   state = {
     progress: 0,
     phantomProgress: 0,
+    timer: 'Loading...',
     paused: false,
     noauth: false,
   }
@@ -172,6 +190,8 @@ class Root extends React.PureComponent {
   }
 
   async newTrack() {
+    this.setState({ timer: 'Loading...' });
+
     const audio = this.audio.current;
 
     const entry = this.props.playingEntry;
@@ -189,11 +209,14 @@ class Root extends React.PureComponent {
 
     audio.src = music(this.props.playingEntry);
     await audio.load()
-    // TODO: setup media notification
 
     if(this.props.playingEntry !== entry) return;
 
     this.setState({ progress: 0 });
+    if(Number.isNaN(audio.duration))
+      this.setState({ timer: `${formatTimer(0, 0)}` });
+    else
+      this.setState({ timer: `${formatTimer(0, audio.duration)} - ${formatTimer(audio.duration, audio.duration)}` });
     audio.play();
   }
 
@@ -225,6 +248,10 @@ class Root extends React.PureComponent {
     const progress = audio.currentTime / audio.duration;
 
     this.setState({ progress });
+    if(Number.isNaN(audio.duration))
+      this.setState({ timer: `${formatTimer(audio.currentTime, 0)}` });
+    else
+      this.setState({ timer: `${formatTimer(audio.currentTime, audio.duration)} - ${formatTimer(audio.duration, audio.duration)}` });
   }
 
   async doLogout() {
@@ -259,7 +286,7 @@ class Root extends React.PureComponent {
       login,
     } = this.props;
 
-    const { progress, phantomProgress, paused, noauth } = this.state;
+    const { progress, phantomProgress, timer, paused, noauth } = this.state;
 
     return (
       <Router>
@@ -281,17 +308,23 @@ class Root extends React.PureComponent {
                     <div className="playing-author">{ playingEntryInst ? playingEntryInst.uploader : '' }</div>
                     <div className="playing-list">{ playing.list.name }</div>
                   </div>
-                  <div className="control">
-                    <Icon onClick={() => this.prev()} className={prev === null ? 'disabled' : ''}>skip_previous</Icon>
-                    { paused ? 
-                        <Icon onClick={() => this.play()}>play_arrow</Icon>
-                        :
-                        <Icon onClick={() => this.pause()}>pause</Icon>
-                    }
-                    <Icon onClick={() => this.next()} className={next === null ? 'disabled' : ''}>skip_next</Icon>
-                    <div className="spacer"></div>
-                    <Icon onClick={() => setRepeat(nextRepeatState(repeating))}>{ repeatIcon(repeating) }</Icon>
-                    <NavLink to={`/${playing.list._id}`}><Icon>queue_music</Icon></NavLink>
+                  <div className="dash">
+                    <div className="timer">
+                      { timer }
+                    </div>
+                    <div className="control">
+                      <NavLink to={`/${playing.list._id}`}><Icon>queue_music</Icon></NavLink>
+                      <div className="spacer"></div>
+                      <Icon onClick={() => this.prev()} className={prev === null ? 'disabled' : ''}>skip_previous</Icon>
+                      { paused ? 
+                          <Icon onClick={() => this.play()}>play_arrow</Icon>
+                          :
+                          <Icon onClick={() => this.pause()}>pause</Icon>
+                      }
+                      <Icon onClick={() => this.next()} className={next === null ? 'disabled' : ''}>skip_next</Icon>
+                      <div className="spacer"></div>
+                      <Icon onClick={() => setRepeat(nextRepeatState(repeating))}>{ repeatIcon(repeating) }</Icon>
+                    </div>
                   </div>
                 </div>
                 : null
