@@ -56,7 +56,19 @@ class EntryImpl extends React.PureComponent {
 
     if(!entry) return (
       <div className={className} style={this.props.style}>
-        <div className="loading"></div>
+        <div className="entry-border" />
+        <div
+          className="entry-artwork"
+          onDragStart={onArtDrag}
+          draggable="true"
+        >
+          <div className="entry-artwork-internal entry-artwork-loading">
+            <div className="loading"></div>
+          </div>
+        </div>
+        <div className="entry-desc-loading">
+          <div className="loading"></div>
+        </div>
       </div>
     );
 
@@ -481,7 +493,11 @@ class List extends React.PureComponent {
 
 
     if(loading && list === null)
-      return <div className="loading"></div>;
+      return <div className="list">
+        <div class="list-loading">
+          <div className="loading"></div>
+        </div>
+      </div>
 
     if(list === null)
       return <div className="list">

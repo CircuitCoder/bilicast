@@ -263,6 +263,11 @@
 
 /* Lists */
 .list {
+  .list-loading {
+    @extend %splash;
+    height: calc(100vh - #{$bottom-height} - 40px - 60px);
+  }
+
   .list-empty {
     @extend %splash;
     height: calc(100vh - #{$bottom-height} - 40px - 60px);
@@ -279,6 +284,7 @@
 
   .entry {
     display: flex;
+    height: 100px;
 
     border-radius: 4px;
     box-shadow: rgba(0,0,0,.3) 0 2px 6px;
@@ -390,6 +396,7 @@
 
     .entry-artwork {
       width: 140px;
+      height: 100px;
       transition: filter .5s ease;
     }
 
@@ -399,6 +406,20 @@
 
       background-size: cover;
       background-position: 50% 50%;
+    }
+
+    .entry-artwork-loading {
+      background: #EEE;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .entry-desc-loading {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .entry-actions {

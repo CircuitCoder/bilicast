@@ -198,3 +198,24 @@ button {
     }
   }
 }
+
+.loading {
+  border: $primary 5px solid;
+  border-bottom: transparent 5px solid;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  box-sizing: border-box;
+
+  animation: loading 1.5s linear infinite;
+}
+
+@keyframes loading {
+  0% {
+    transform: rotate(0);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
