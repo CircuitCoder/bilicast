@@ -231,6 +231,7 @@
 
   .recent {
     width: 100%;
+    box-sizing: border-box;
     border-left: rgba($primary, 0.5) 10px solid;
     padding: 15px 40px;
     margin-bottom: 20px;
