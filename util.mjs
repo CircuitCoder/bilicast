@@ -1,6 +1,10 @@
 import { spawn } from 'child_process';
+import { promisify } from 'util';
+import fs from 'fs';
 
-import request from 'request-promise-native';
+const access = promisify(fs.access);
+
+import request from './request';
 
 import logger from './logger';
 
@@ -34,7 +38,7 @@ export function getDesc(av) {
     stdout += data;
   });
 
-  child.stdout.on('data', data => {
+  child.stderr.on('data', data => {
     stderr += data;
   });
 
@@ -58,20 +62,20 @@ export function getDesc(av) {
 export function downloadTo(url, format, path) {
   logger.debug(`Downloading ${url} @ ${format}`);
   logger.debug(`  => ${path}`);
-  const child = spawn('you-get', ['-o', path, '-O', 'raw', '--no-caption', `--format=${format}`, '--auto-rename', url]);
+  const child = spawn('tmux', ['-L', 'bilicast', 'new', '-d', '-s', path, `you-get -o ${path} -O raw --no-caption --format=${format} --auto-rename ${url} && touch ${path}/done`]);
 
   child.stdout.on('data', data => {
     logger.debug(data);
   });
 
-  child.stdout.on('data', data => {
+  child.stderr.on('data', data => {
     logger.debug(`STDERR: ${data}`);
   });
 
   return new Promise((resolve, reject) => {
     child.on('close', code => {
       logger.debug(`Exit code: ${code}`);
-      if(code === 0) return resolve();
+      if(code === 0) return access(`${path}/done`).then(resolve).catch(reject);
       else return reject();
     });
   });

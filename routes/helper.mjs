@@ -1,6 +1,6 @@
 import Router from 'koa-router';
 
-import request from 'request-promise-native';
+import request from '../request';
 
 import { auth, authMiddleware } from '../util';
 

@@ -72,7 +72,7 @@ async function download(av, dbid, desc, status = 'preparing') {
   const container = path.resolve(basedir, `../store/${dbid}`);
 
   if(STAGES[status] <= STAGES.preparing) {
-    await mkdir(container);
+    await mkdir(container, { recursive: true });
 
     logger.info(`Download from ${av}`);
     const detail = await util.getDetail(av);
@@ -169,7 +169,11 @@ async function housecleanSingle(entry) {
     await entry.save();
   }
 
-  await scopedDownload(entry.source, entry._id, entry.desc, entry.status);
+  try {
+    await scopedDownload(entry.source, entry._id, entry.desc, entry.status);
+  } catch(e) {
+    console.error(e.stack);
+  }
 }
 
 async function houseclean() {
@@ -188,7 +192,7 @@ router.get('/download/:av', util.authMiddleware, async ctx => {
   // Fire and forget
   for(const { upserted, entry, desc } of handles)
     if(upserted)
-      download(ctx.params.av, entry._id, desc);
+      scopedDownload(ctx.params.av, entry._id, desc);
 
   return ctx.body = handles.map(e => e.entry._id);
 });
