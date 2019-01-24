@@ -62,73 +62,6 @@ function fromCache(req) {
   });
 }
 
-async function fetchBackend(req) {
-  if(req.method !== 'GET') return fetch(req);
-
-  const url = new URL(req.url);
-  const queries = url.search.substr(1).split('&').map(decodeURIComponent);
-
-  const liveReq = new Request(req.url.split('?')[0], {
-    method: req.method,
-    headers: req.headers,
-    credentials: req.credentials,
-  });
-
-  if(queries.includes('cache') && !queries.includes('update')) {
-    console.log(`Fetching from cache: ${liveReq.url}`);
-    const resp = await caches.match(liveReq);
-    if(resp) {
-      // Range: https://bugs.chromium.org/p/chromium/issues/detail?id=575357#c10
-      const range = req.headers.get('Range');
-      console.log(range);
-      if(!range)
-        return resp;
-
-      const startPos = Number(range.match(/^bytes\=(\d+)\-/)[1]);
-      console.log(startPos);
-
-      const ab = await resp.arrayBuffer();
-
-      const headers = resp.headers;
-      headers.append('Content-Range', `bytes ${startPos}-${ab.byteLength-1}/${ab.byteLength}`);
-      return new Response(
-        ab.slice(startPos),
-        {
-          status: 206,
-          statusText: 'Partial Content',
-          headers,
-        },
-      );
-    } else console.log('Missed');
-  }
-
-  const live = await fetch(liveReq);
-
-  if(queries.includes('update')) {
-    const cache = await caches.open('v1');
-
-    let modified;
-    if(live.headers.get('Content-Type').match(/^application\/json;?/)) {
-      const body = await live.json();
-
-      body.cached = true;
-      modified = new Response(JSON.stringify(body), {
-        status: live.status,
-        statusText: live.statusText,
-        headers: live.headers,
-      });
-    } else
-      modified = live;
-
-    const returning = modified.clone();
-    cache.put(liveReq, modified);
-
-    return returning;
-  }
-
-  return live;
-}
-
 self.addEventListener('install', event => {
   self.skipWaiting();
 });
@@ -136,13 +69,8 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const toBackend = isBackend(event.request);
 
-  if(toBackend) {
-    event.respondWith(fetchBackend(event.request).then(resp => {
-      if(resp) return resp;
-      else return fetch(event.request);
-    }));
+  if(toBackend) // Cache is now handled by the frontend
     return;
-  }
 
   console.log(noCache(event.request), event.request.url);
   if(noCache(event.request)) return null;
@@ -156,10 +84,6 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
-  self.clients.matchAll({ type: 'window' }).then(clients => {
-    for(const client of clients)
-      client.navigate(client.url);
-  });
   event.waitUntil(self.clients.claim());
 });
 

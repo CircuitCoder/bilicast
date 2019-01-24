@@ -2,7 +2,7 @@ import React from 'react';
 
 import { connect } from 'react-redux';
 
-import { get, post, artwork } from '../util';
+import { get, post, artwork, matchList, storeList } from '../util';
 import { fetchEntry, playEntry, prefetchEntry, queueRecent, install } from '../store/actions';
 
 import { NavLink } from 'react-router-dom';
@@ -27,6 +27,7 @@ const FAST_SCROLL_SPEED = 10;
 class EntryImpl extends React.PureComponent {
   state = {
     lifted: false,
+    artwork: null,
   }
 
   constructor(props) {
@@ -76,6 +77,10 @@ class EntryImpl extends React.PureComponent {
     if(prefetching) prefetchingIcon = <Icon className="disabled rotate">sync</Icon>;
     else if(entry.cached) prefetchingIcon = <Icon className="disabled">done</Icon>;
 
+    if(entry.status !== 'preparing' && (
+      this.state.artwork === null || this.state.artwork.id !== entry._id
+    )) this.fetchArtwork();
+
     return <div className={className} style={this.props.style}>
       <div className="entry-border" />
       <div
@@ -83,8 +88,8 @@ class EntryImpl extends React.PureComponent {
         onDragStart={onArtDrag}
         draggable="true"
       >
-        { entry.status !== 'preparing' ?
-            <div style={{backgroundImage: `url(${artwork(entry._id)})`}} className="entry-artwork-internal" />
+        { this.state.artwork !== null ?
+            <div style={{backgroundImage: `url(${this.state.artwork.uri})`}} className="entry-artwork-internal" />
             :
             <div className="entry-artwork-internal entry-artwork-loading">
               <div className="loading"></div>
@@ -131,6 +136,13 @@ class EntryImpl extends React.PureComponent {
         }
       </div>
     </div>
+  }
+
+  fetchArtwork() {
+    let id = this.props.entry._id;
+    artwork(id).then(uri => {
+      if(this.props.entry._id === id) this.setState({ artwork: { id, uri }})
+    });
   }
 }
 
@@ -245,19 +257,30 @@ class List extends React.PureComponent {
     else
       this.state = { ...this.state, loading: true };
 
-    const query = update ? 'update' : 'cache';
-    let list;
-    try {
-      list = await get(`/list/${this.props.match.params.id}?${query}`);
-    } catch(e) {
-      list = null;
+    const id = this.props.match.params.id;
+
+    let list = null;
+    if(!update) {
+      list = await matchList(id);
+      if(list) list.cached = true;
     }
+
+    if(list === null)
+      try {
+        list = await get(`/list/${id}`);
+      } catch(e) {}
 
     if(set)
       this.setState({ list, loading: false });
 
-    if(list)
+    if(list) {
       this.props.requeueRecent(list.name);
+
+      if(update) {
+        await storeList(id, list);
+        list.cached = true;
+      }
+    }
 
     return list;
   }

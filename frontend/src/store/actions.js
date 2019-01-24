@@ -1,4 +1,4 @@
-import { get } from '../util';
+import { get, artwork, storeArtwork, music, storeMusic, storeEntry, matchEntry } from '../util';
 
 export const TYPES = {
   CACHE_ENTRY: 'CACHE_ENTRY',
@@ -81,21 +81,38 @@ export const fetchEntry = (eid, prefetch = false) =>
 
     if(prefetch) {
       dispatch(prefetchStarted(eid));
-      const art = get(`/store/${eid}/art.jpg?update`);
-      const content = get(`/store/${eid}/content.m4a?update`);
-      await Promise.all([art, content]);
+      const artStore = artwork(eid)
+        .then(url => get(url))
+        .then(blob => storeArtwork(eid, blob));
+      const contentStore = music(eid)
+        .then(url => get(url))
+        .then(blob => storeMusic(eid, blob));
+      await Promise.all([artStore, contentStore]);
     }
 
-    const query = prefetch ? 'update' : 'cache';
-    const entry = await get(`/entry/${eid}?${query}`);
+    let entry = null;
+    if(!prefetch) {
+      console.log(matchEntry);
+      entry = await matchEntry(eid);
+      if(entry) entry.cached = true;
+    }
+
+    if(entry === null)
+      entry = await get(`/entry/${eid}`);
+
     dispatch(cacheEntry(entry));
     fetchQueue.delete(eid);
 
     if(entry.status !== 'ready' && !polling)
       setTimeout(() => dispatch(pollEntry()), POLL_INTERVAL);
 
-    if(prefetch)
+    if(prefetch) {
+      if(entry) {
+        await storeEntry(eid, entry);
+        entry.cached = true;
+      }
       dispatch(prefetchFinished(eid));
+    }
 
     return entry;
   };

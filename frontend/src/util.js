@@ -16,7 +16,7 @@ async function parseResp(resp) {
   else if(resp.status !== 200) throw resp.statusText;
   else if(resp.headers.get('Content-Type').indexOf('application/json') === 0)
     return resp.json();
-  else return resp.text();
+  else return resp.blob();
 }
 
 function buildHeaders() {
@@ -30,8 +30,21 @@ function buildHeaders() {
   return result;
 }
 
+function blobToDataURI(blob) {
+  const reader = new FileReader();
+
+  const result = new Promise(resolve => {
+    reader.addEventListener('load', () => resolve(reader.result));
+  });
+
+  reader.readAsDataURL(blob);
+  return result;
+}
+
 export async function post(endpoint, payload, method = 'POST') {
-  const resp = await fetch(BACKEND + endpoint, {
+  let uri = endpoint;
+  if(uri.indexOf('/') === 0) uri = BACKEND + uri;
+  const resp = await fetch(uri, {
     method,
     body: JSON.stringify(payload),
     headers: buildHeaders(),
@@ -41,7 +54,9 @@ export async function post(endpoint, payload, method = 'POST') {
 }
 
 export async function get(endpoint, method = 'GET') {
-  const resp = await fetch(BACKEND + endpoint, {
+  let uri = endpoint;
+  if(uri.indexOf('/') === 0) uri = BACKEND + uri;
+  const resp = await fetch(uri, {
     method,
     headers: buildHeaders(),
   });
@@ -49,11 +64,20 @@ export async function get(endpoint, method = 'GET') {
   return parseResp(resp);
 }
 
-let dbpromise = Promise.resolve(null);
-if(window.indexedDB)
-  dbpromise = idb.open('persistent', 1, upgradeDB => {
+let dbPromise = Promise.resolve(null);
+let cachePromise = Promise.resolve(null);
+if(window.indexedDB) {
+  dbPromise = idb.open('persistent', 1, upgradeDB => {
     upgradeDB.createObjectStore('persistent');
   });
+
+  cachePromise = idb.open('cache', 1, upgradeDB => {
+    upgradeDB.createObjectStore('artwork');
+    upgradeDB.createObjectStore('content');
+    upgradeDB.createObjectStore('entry');
+    upgradeDB.createObjectStore('list');
+  });
+}
 
 export async function auth(req) {
   const headers = new Headers();
@@ -69,7 +93,7 @@ export async function auth(req) {
   if(payload.success) {
     passphrase = req;
 
-    const db = await dbpromise;
+    const db = await dbPromise;
     if(db) {
       const tx = db.transaction('persistent', 'readwrite');
       if(req)
@@ -86,7 +110,7 @@ export async function auth(req) {
 }
 
 export async function savedAuth() {
-  const db = await dbpromise;
+  const db = await dbPromise;
   if(!db) return false;
   const passphrase = await db.transaction('persistent').objectStore('persistent').get('passphrase');
 
@@ -97,29 +121,53 @@ export async function savedAuth() {
 }
 
 export async function unauth() {
-  const db = await dbpromise;
+  const db = await dbPromise;
   if(!db) return;
 
   await db.transaction('persistent', 'readwrite').objectStore('persistent').delete('passphrase');
 }
 
-export function artwork(id) {
-  return `${BACKEND}/store/${id}/art.jpg?cache`;
+function storeTmpl(target) {
+  return async (id, content) => {
+    const cache = await cachePromise;
+    await cache.transaction(target, 'readwrite').objectStore(target).put(content, id);
+  }
 }
 
-export function music(id) {
-  return `${BACKEND}/store/${id}/content.m4a?cache`;
+function matchTmpl(target, convert, fb) {
+  return async id => {
+    const cache = await cachePromise;
+    const fallback = fb(id);
+    if(!cache)
+      return fallback;
+
+    const result = await cache.transaction(target).objectStore(target).get(id);
+    if(result)
+      return await convert(result);
+
+    return fallback;
+  }
 }
+
+export const storeArtwork = storeTmpl('artwork');
+export const storeMusic = storeTmpl('content');
+export const storeEntry = storeTmpl('entry');
+export const storeList = storeTmpl('list');
+
+export const artwork = matchTmpl('artwork', blobToDataURI, id => `${BACKEND}/store/${id}/art.jpg`);
+export const music = matchTmpl('content', blobToDataURI, id => `${BACKEND}/store/${id}/content.m4a`);
+export const matchEntry = matchTmpl('entry', async e => e, () => null);
+export const matchList = matchTmpl('list', async e => e, () => null);
 
 export async function loadRecents() {
-  const db = await dbpromise;
+  const db = await dbPromise;
   if(!db) return false;
   const result = await db.transaction('persistent').objectStore('persistent').get('recents');
   return result || [];
 }
 
 export async function saveRecents(recents) {
-  const db = await dbpromise;
+  const db = await dbPromise;
   if(!db) return false;
   await db.transaction('persistent', 'readwrite').objectStore('persistent').put(recents, 'recents');
 }

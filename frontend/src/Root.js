@@ -92,6 +92,8 @@ class Root extends React.PureComponent {
     timer: 'Loading...',
     paused: false,
     noauth: false,
+
+    artwork: null,
   }
 
   constructor(props) {
@@ -207,7 +209,7 @@ class Root extends React.PureComponent {
       // and non-ready entries can't be played directly either
     }
 
-    audio.src = music(this.props.playingEntry);
+    audio.src = await music(this.props.playingEntry);
     await audio.load()
 
     if(this.props.playingEntry !== entry) return;
@@ -218,6 +220,11 @@ class Root extends React.PureComponent {
     else
       this.setState({ timer: `${formatTimer(0, audio.duration)} - ${formatTimer(audio.duration, audio.duration)}` });
     audio.play();
+
+    // Load artwork
+    this.setState({ artwork: null });
+    const art = await artwork(this.props.playingEntry);
+    this.setState({ artwork: art });
   }
 
   prev() {
@@ -286,7 +293,14 @@ class Root extends React.PureComponent {
       login,
     } = this.props;
 
-    const { progress, phantomProgress, timer, paused, noauth } = this.state;
+    const {
+      progress,
+      phantomProgress,
+      timer,
+      paused,
+      noauth,
+      artwork: art,
+    } = this.state;
 
     return (
       <Router>
@@ -302,7 +316,7 @@ class Root extends React.PureComponent {
           <nav className="bottom">
             { playing ? 
                 <div className="playing">
-                  <div className="artwork" style={{backgroundImage: `url(${artwork(playingEntry)})`}}></div>
+                  <div className="artwork" style={{backgroundImage: `url(${art})`}}></div>
                   <div className="info">
                     <div className="playing-title">{ playingEntryInst ? playingEntryInst.title : '' }</div>
                     <div className="playing-author">{ playingEntryInst ? playingEntryInst.uploader : '' }</div>
