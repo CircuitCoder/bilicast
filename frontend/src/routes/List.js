@@ -494,7 +494,7 @@ class List extends React.PureComponent {
 
     if(loading && list === null)
       return <div className="list">
-        <div class="list-loading">
+        <div className="list-loading">
           <div className="loading"></div>
         </div>
       </div>
