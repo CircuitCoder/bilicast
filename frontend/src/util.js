@@ -159,6 +159,57 @@ export const music = matchTmpl('content', blobToDataURI, id => `${BACKEND}/store
 export const matchEntry = matchTmpl('entry', async e => e, () => null);
 export const matchList = matchTmpl('list', async e => e, () => null);
 
+export async function deleteEntry(id) {
+  const cache = await cachePromise;
+  if(!cache) return;
+
+  await cache.transaction('entry', 'readwrite').objectStore('entry').delete(id);
+}
+
+async function statIndividual(cache, store, sizes) {
+  const orphans = [];
+  const tx = cache.transaction(store);
+  tx.objectStore(store).iterateCursor(cursor => {
+    if(!cursor) return;
+    const size = cursor.value.size;
+
+    if(!sizes.has(cursor.key)) orphans.push(cursor.key);
+    else sizes.set(cursor.key, sizes.get(cursor.key) + size);
+
+    cursor.continue();
+  });
+  await tx.complete;
+
+  for(const o of orphans)
+    await cache.transaction(store, 'readwrite').objectStore(store).delete(o);
+}
+
+export async function storeStat() {
+  const cache = await cachePromise;
+  if(!cache) return [];
+
+  const sizes = new Map();
+  const entries = [];
+  const tx = cache.transaction('entry');
+  tx.objectStore('entry').iterateCursor(cursor => {
+    if(!cursor) return;
+
+    const entry = cursor.value;
+    entries.push(entry);
+    sizes.set(entry._id, 0);
+    cursor.continue();
+  });
+  await tx.complete;
+
+  await statIndividual(cache, 'content', sizes);
+  await statIndividual(cache, 'artwork', sizes);
+
+  const sized = entries.map(e => Object.assign({}, { size: sizes.get(e._id) }, e));
+  sized.sort((a, b) => b.size - a.size);
+
+  return sized;
+}
+
 export async function loadRecents() {
   const db = await dbPromise;
   if(!db) return false;
@@ -170,4 +221,17 @@ export async function saveRecents(recents) {
   const db = await dbPromise;
   if(!db) return false;
   await db.transaction('persistent', 'readwrite').objectStore('persistent').put(recents, 'recents');
+}
+
+const SIZE_LEVELS = ['B', 'KB', 'MB', 'GB'];
+export function formatSize(size) {
+  let target = size;
+  let level = 0;
+  while(target > 1000) {
+    target /= 1000;
+    level += 1;
+  }
+
+  target = Math.round(target * 10) / 10;
+  return target + SIZE_LEVELS[level];
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { withRouter } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 
 import { post } from '../util';
 
@@ -18,6 +18,11 @@ class New extends React.PureComponent {
         <div className="title">
           <Icon>playlist_add</Icon>
           <div className="title-content">Create Playlist</div>
+          <div className="actions">
+            <NavLink to="/">
+              <Icon>home</Icon>
+            </NavLink>
+          </div>
         </div>
 
         <div className="input-hint">Title</div>

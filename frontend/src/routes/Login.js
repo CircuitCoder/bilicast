@@ -2,7 +2,7 @@ import React from 'react';
 
 import { connect } from 'react-redux';
 
-import { withRouter } from 'react-router-dom';
+import { NavLink, withRouter } from 'react-router-dom';
 
 import Icon from '../Icon';
 
@@ -22,6 +22,11 @@ class Login extends React.PureComponent {
         <div className="title">
           <Icon>person</Icon>
           <div className="title-content">Login</div>
+          <div className="actions">
+            <NavLink to="/">
+              <Icon>home</Icon>
+            </NavLink>
+          </div>
         </div>
 
         <div className="input-hint">Passphrase</div>

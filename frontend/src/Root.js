@@ -15,6 +15,7 @@ import {
   New,
   List,
   Login,
+  Storage,
 } from './routes';
 
 import './Root.scss';
@@ -310,6 +311,7 @@ class Root extends React.PureComponent {
               <Route exact path="/" component={Home} />
               <Route exact path="/new" component={New} />
               <Route exact path="/login" component={Login} />
+              <Route exact path="/storage" component={Storage} />
               <Route exact path="/:id" component={List} />
             </Switch>
           </div>

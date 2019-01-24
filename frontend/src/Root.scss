@@ -265,7 +265,7 @@
 .list {
   .list-loading {
     @extend %splash;
-    height: calc(100vh - #{$bottom-height} - 40px - 60px);
+    height: calc(100vh - #{$bottom-height} - 40px);
   }
 
   .list-empty {
@@ -461,6 +461,61 @@
       .entry-artwork {
         cursor: grab;
       }
+    }
+  }
+}
+
+/* Storaget */
+.storage {
+  .storage-loading {
+    @extend %splash;
+    height: calc(100vh - #{$bottom-height} - 40px - 60px);
+    width: 100%;
+  }
+
+  .storage-entry {
+    width: 100%;
+    box-sizing: border-box;
+    border-left: rgba($primary, 0.5) 10px solid;
+    padding: 15px 40px;
+    margin-bottom: 20px;
+
+    display: flex;
+    align-items: center;
+  }
+
+  .storage-info {
+    flex: 1;
+    overflow: hidden;
+    margin-right: 10px;
+  }
+
+  .storage-title {
+    color: rgba(0,0,0,.87);
+    line-height: 32px;
+    font-size: 20px;
+    font-weight: bold;
+
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .storage-size {
+    color: rgba(0,0,0,.87);
+    line-height: 20px;
+    font-size: 16px;
+    margin-top: 5px;
+  }
+
+  .storage-delete {
+    color: black;
+    opacity: .38;
+    transition: opacity .2s ease;
+
+    &:hover {
+      opacity: .87;
+      cursor: pointer;
     }
   }
 }

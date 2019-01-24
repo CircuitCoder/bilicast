@@ -15,11 +15,14 @@ const Home = ({ recents, history, canInstall, doInstall }) => (
       <Icon>home</Icon>
       <div className="title-content">Welcome!</div>
 
+      <div className="actions">
+        <NavLink to="/storage">
+          <Icon>save</Icon>
+        </NavLink>
       { canInstall ? 
-          <div className="actions">
-            <div className="icon-group" onClick={doInstall}><Icon>widgets</Icon>Install as App</div>
-          </div>
+          <div className="icon-group" onClick={doInstall}><Icon>widgets</Icon>Install as App</div>
           : null }
+      </div>
     </div>
 
     <div className="input-hint">Jump to List (Enter)</div>
