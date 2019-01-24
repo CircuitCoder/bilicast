@@ -13,7 +13,7 @@ const Home = ({ recents, history, canInstall, doInstall }) => (
   <div className="home">
     <div className="title">
       <Icon>home</Icon>
-      Welcome!
+      <div className="title-content">Welcome!</div>
 
       { canInstall ? 
           <div className="actions">

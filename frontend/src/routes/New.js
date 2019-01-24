@@ -17,7 +17,7 @@ class New extends React.PureComponent {
       <div className="new">
         <div className="title">
           <Icon>playlist_add</Icon>
-          Create Playlist
+          <div className="title-content">Create Playlist</div>
         </div>
 
         <div className="input-hint">Title</div>

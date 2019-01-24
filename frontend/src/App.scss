@@ -34,6 +34,14 @@ a {
     font-size: 36px;
     margin-right: 10px;
   }
+
+  .title-content {
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+    flex: 1;
+  }
 }
 
 /* General */

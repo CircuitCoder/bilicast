@@ -21,7 +21,7 @@ class Login extends React.PureComponent {
       <div className="login">
         <div className="title">
           <Icon>person</Icon>
-          Login
+          <div className="title-content">Login</div>
         </div>
 
         <div className="input-hint">Passphrase</div>

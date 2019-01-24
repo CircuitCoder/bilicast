@@ -483,7 +483,7 @@ class List extends React.PureComponent {
     if(list === null)
       return <div className="list">
         <div className="title">
-          &nbsp;
+          <div className="title-content"></div>
           <div className="actions">
             { navRegion }
           </div>
@@ -510,7 +510,7 @@ class List extends React.PureComponent {
     return <div className={className}>
       <div className="title">
         <Icon>queue_music</Icon>
-        { list.name }
+        <div className="title-content">{ list.name }</div>
         <div className="actions">
           { navRegion }
 
