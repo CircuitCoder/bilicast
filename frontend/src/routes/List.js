@@ -112,7 +112,10 @@ class EntryImpl extends React.PureComponent {
               { login ? <Icon onClick={onDelete}>delete</Icon> : null }
             </React.Fragment>
             :
-            <Icon className="disabled rotate">sync</Icon>
+            <React.Fragment>
+              <Icon className="disabled rotate">sync</Icon>
+              { login ? <Icon onClick={onDelete}>delete</Icon> : null }
+            </React.Fragment>
         }
       </div>
     </div>
