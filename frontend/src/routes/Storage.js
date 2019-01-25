@@ -38,7 +38,14 @@ class Storage extends React.PureComponent {
       content = <div className="storage-entries">
         { this.state.stat.map(e => <div className="storage-entry" key={e._id}>
           <div className="storage-info">
-            <div className="storage-title">{ e.title }</div>
+            { e.single ? 
+                <div className="storage-title">{ e.title }</div>
+              :
+                <React.Fragment>
+                  <div className="storage-title-small">{ e.title }</div>
+                  <div className="storage-title">{ e.subtitle }</div>
+                </React.Fragment>
+            }
             <div className="storage-size">{ formatSize(e.size) }</div>
           </div>
           <Icon onClick={() => this.deleteEntry(e._id)} className="storage-delete">delete</Icon>

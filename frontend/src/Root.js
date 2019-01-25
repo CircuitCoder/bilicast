@@ -287,7 +287,6 @@ class Root extends React.PureComponent {
       playing,
       repeating,
       setRepeat,
-      playingEntry,
       playingEntryInst,
       prev,
       next,

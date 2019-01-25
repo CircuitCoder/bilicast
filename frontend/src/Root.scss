@@ -490,6 +490,12 @@
     margin-right: 10px;
   }
 
+  .storage-title-small {
+    color: rgba(0,0,0,.54);
+    font-size: 14px;
+    line-height: 18px;
+  }
+
   .storage-title {
     color: rgba(0,0,0,.87);
     line-height: 32px;
@@ -505,7 +511,7 @@
     color: rgba(0,0,0,.87);
     line-height: 20px;
     font-size: 16px;
-    margin-top: 5px;
+    margin-top: 10px;
   }
 
   .storage-delete {
