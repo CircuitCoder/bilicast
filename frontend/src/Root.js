@@ -21,13 +21,13 @@ import {
 import './Root.scss';
 
 function findNext({ playing: { list: { entries }, index }, repeating }) {
-  if(repeating === null && index === entries.length - 1) return null;
+  if((repeating === null || repeating === 'SINGLE') && index === entries.length - 1) return null;
   if(repeating === 'SHUFFLE') return -1;
   return (index + 1) % entries.length;
 }
 
 function findPrev({ playing: { list: { entries }, index }, repeating }) {
-  if(repeating === null && index === 0) return null;
+  if((repeating === null || repeating === 'SINGLE') && index === 0) return null;
   if(repeating === 'SHUFFLE') return null;
 
   if(index === 0) return entries.length - 1;
@@ -36,13 +36,15 @@ function findPrev({ playing: { list: { entries }, index }, repeating }) {
 
 function nextRepeatState(cur) {
   if(cur === null) return 'REPEAT';
-  if(cur === 'REPEAT') return 'SHUFFLE';
+  if(cur === 'REPEAT') return 'SINGLE';
+  if(cur === 'SINGLE') return 'SHUFFLE';
   return null;
 }
 
 function repeatIcon(cur) {
   if(cur === null) return 'trending_flat';
   if(cur === 'SHUFFLE') return 'shuffle';
+  if(cur === 'SINGLE') return 'repeat_one';
   return 'repeat';
 }
 
@@ -282,6 +284,11 @@ class Root extends React.PureComponent {
     audio.currentTime = audio.duration * ratio;
   }
 
+  onEnded() {
+    if(this.props.repeating === 'SINGLE') return this.play();
+    else return this.next();
+  }
+
   render() {
     const {
       playing,
@@ -381,7 +388,7 @@ class Root extends React.PureComponent {
                 onTimeUpdate={() => this.updateProgress()}
                 onPause={() => this.setState({ paused: true })}
                 onPlay={() => this.setState({ paused: false })}
-                onEnded={() => this.next()}
+                onEnded={() => this.onEnded()}
               />
             </div>
           </nav>
