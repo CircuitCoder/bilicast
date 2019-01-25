@@ -494,6 +494,10 @@
     color: rgba(0,0,0,.54);
     font-size: 14px;
     line-height: 18px;
+
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   .storage-title {
