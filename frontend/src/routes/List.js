@@ -158,13 +158,24 @@ const Entry = connect(
 )(EntryImpl);
 
 function parseTarget(target) {
+  // Matching bilibili
   if(target.match(/^av\d+/))
     return target;
 
-  const re = /^https?:\/\/(www\.)?bilibili\.com\/video\/(av\d+)\/?(\?.*)?$/;
-  const match = target.match(re);
+  const biliUri = /^https?:\/\/(www\.)?bilibili\.com\/video\/(av\d+)\/?(\?.*)?$/;
+  const biliMatch = target.match(biliUri);
 
-  if(match) return match[2];
+  if(biliMatch) return biliMatch[2];
+
+  // Matching nico
+  if(target.match(/^sm\d+/))
+    return target;
+
+  const nicoUri = /^https?:\/\/(www\.)?nicovideo\.jp\/watch\/(sm\d+)$/;
+  const nicoMatch = target.match(nicoUri);
+
+  if(nicoMatch) return nicoMatch[2];
+
   return null;
 }
 
@@ -604,7 +615,7 @@ class List extends React.PureComponent {
 
         <div className="input-hint">AV Number or URL</div>
         <input
-          placeholder="av1234 or https://bilibili.com/video/av1234"
+          placeholder="av, sm or full URL"
           value={addTarget}
           onChange={ev => this.setState({ addTarget: ev.target.value })}
         />

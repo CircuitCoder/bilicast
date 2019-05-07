@@ -79,7 +79,7 @@ async function download(av, dbid, desc, status = 'preparing') {
     logger.debug(detail);
 
     await new Promise(resolve => 
-      request(detail.View.pic)
+      request(detail.thumb)
         .on('end', resolve)
         .pipe(fs.createWriteStream(path.join(container, 'art.jpg'))) // TODO: other ext
     );
@@ -89,8 +89,8 @@ async function download(av, dbid, desc, status = 'preparing') {
     }, {
       $set: {
         status: 'downloading',
-        uploader: detail.Card.card.name,
-        category: detail.View.tname,
+        uploader: detail.uploader,
+        category: detail.category,
       },
     }, {
       runValidators: true,
@@ -100,23 +100,26 @@ async function download(av, dbid, desc, status = 'preparing') {
   if(STAGES[status] <= STAGES.downloading) {
     // Selecting best source
     const source = Object.keys(desc.streams).reduce((acc, i) => {
-      if(desc.streams[i].container !== 'flv') return acc;
+      if(!['flv', 'mp4'].includes(desc.streams[i].container)) return acc;
       if(acc === null) return { format: i, ...desc.streams[i] };
       if(desc.streams[i].size > acc.size) return { format: i, ...desc.streams[i] };
       return acc;
     }, null);
 
+    // Nico wont return a url in their desc
+    const uri = desc.url || util.getUri(av);
+
     await Entry.findOneAndUpdate({
       _id: dbid,
     }, {
       $set: {
-        ref: desc.url,
+        ref: uri,
       },
     }, {
       runValidators: true,
     });
 
-    await util.downloadTo(desc.url, source.format, container);
+    await util.downloadTo(uri, source.format, container, av);
 
     await Entry.findOneAndUpdate({
       _id: dbid,
@@ -129,9 +132,10 @@ async function download(av, dbid, desc, status = 'preparing') {
     });
   }
 
-  await util.convertMp4(container);
-  await util.convertM4a(container);
-  await util.rmRaw(container);
+  const suffix = await util.findSuffix(container)
+  await util.convertMp4(container, suffix);
+  await util.convertM4a(container, suffix);
+  await util.rmRaw(container, suffix);
 
   await Entry.findOneAndUpdate({
     _id: dbid,
