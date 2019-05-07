@@ -28,8 +28,12 @@ router.get('/:id', async ctx => {
 router.post('/:id/entries', authMiddleware, async ctx => {
   const resp = await List.findOneAndUpdate({
     _id: ctx.params.id,
+    entries: { $nin: ctx.request.body },
   }, {
-    $addToSet: { entries: { $each: ctx.request.body } },
+    $push: { entries: {
+      $each: ctx.request.body,
+      $position: 0,
+    } },
   }).lean();
   if(resp) return ctx.status = 204;
   else return ctx.status = 404;
