@@ -22,7 +22,9 @@ router.post('/', authMiddleware, async ctx => {
 });
 
 router.get('/:id', async ctx => {
-  return ctx.body = await List.findById(ctx.params.id).lean();
+  const list = await List.findById(ctx.params.id).lean();
+  list.entries.reverse();
+  return ctx.body = list;
 });
 
 router.post('/:id/entries', authMiddleware, async ctx => {
