@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import fs from 'fs';
 
 const access = promisify(fs.access);
+const unlink = promisify(fs.unlink);
 
 import request from './request';
 
@@ -121,6 +122,11 @@ export function convertM4a(base) {
       else return reject();
     });
   });
+}
+
+export async function rmRaw(base) {
+  logger.debug(`Removing ${base}/raw.flv`);
+  await unlink(`${base}/raw.flv`);
 }
 
 export function auth(req) {

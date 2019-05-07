@@ -131,6 +131,7 @@ async function download(av, dbid, desc, status = 'preparing') {
 
   await util.convertMp4(container);
   await util.convertM4a(container);
+  await util.rmRaw(container);
 
   await Entry.findOneAndUpdate({
     _id: dbid,
