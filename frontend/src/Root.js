@@ -366,7 +366,7 @@ class Root extends React.PureComponent {
                     <div className="playing-author">{ playingEntryInst ? playingEntryInst.uploader : '' }</div>
                     <div className="playing-list">{ playing.list.name }</div>
                   </div>
-                  <div className="dash">
+                  <div className={volumeShown ? 'dash dash-hidden' : 'dash'}>
                     <div className="timer">
                       { timer }
                     </div>
@@ -405,10 +405,12 @@ class Root extends React.PureComponent {
             <div className="spanner"></div>
             <div className={volumeShown ? 'volume-shown volume' : 'volume'} onClick={this.blocker}>
               <Icon onClick={() => this.toggleVolume()}>volume_up</Icon>
-              <div className="volume-bar" onClick={ev => this.setVolume(ev)}>
-                <div className="volume-inner" style={{
-                  transform: `translateX(-${(1 - volume) * 100}%)`,
-                }}></div>
+              <div className="volume-anchor">
+                <div className="volume-bar" onClick={ev => this.setVolume(ev)}>
+                  <div className="volume-inner" style={{
+                    transform: `translateX(-${(1 - volume) * 100}%)`,
+                  }}></div>
+                </div>
               </div>
             </div>
             <div className="actions">

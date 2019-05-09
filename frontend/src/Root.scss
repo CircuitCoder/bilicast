@@ -79,6 +79,7 @@
       width: 140px;
       background-size: cover;
       background-position: 50% 50%;
+      z-index: 1;
     }
 
     .info {
@@ -132,6 +133,13 @@
       display: flex;
       justify-content: center;
       flex-direction: column;
+
+      transition: transform .2s ease, opacity .2s ease;
+
+      &.dash-hidden {
+        transform: translateX(- $volume-width - 20px);
+        opacity: 0;
+      }
     }
 
     .timer {
@@ -189,25 +197,38 @@
   .volume {
     display: flex;
     align-items: center;
-    transform: translateX($volume-width + 20px);
     transition: transform .2s ease;
 
     .material-icons {
       @extend %action-icon;
     }
 
-    .volume-bar {
+    .volume-anchor {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 100%;
+      width: 0;
+      overflow: visible;
       opacity: 0;
-      pointer-event: none;
+      transition: opacity .2s ease;
+
+      padding: 0 10px;
+
+      display: flex;
+      width: $volume-width + 20px;
+      align-items: center;
+
+      pointer-events: none;
+    }
+
+    .volume-bar {
       width: $volume-width;
       height: 5px;
+
       background: lighten(grayscale($primary), 20%);
-      margin-left: 10px;
-      margin-right: 10px;
       overflow: hidden;
       cursor: pointer;
-
-      transition: opacity .2s ease;
 
       .volume-inner {
         width: $volume-width;
@@ -216,11 +237,13 @@
       }
     }
 
+    transform: none;
+
     &.volume-shown {
-      transform: none;
-      .volume-bar {
+      transform: translateX(- $volume-width - 20px);
+      .volume-anchor {
         opacity: 1;
-        pointer-event: all;
+        pointer-events: all;
       }
     }
   }
