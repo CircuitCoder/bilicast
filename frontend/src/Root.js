@@ -91,12 +91,15 @@ const mapD2P = dispatch => ({
 class Root extends React.PureComponent {
   state = {
     progress: 0,
+    volume: 0.5,
     phantomProgress: 0,
     timer: 'Loading...',
     paused: false,
     noauth: false,
 
     artwork: null,
+
+    volumeShown: false,
   }
 
   constructor(props) {
@@ -126,6 +129,8 @@ class Root extends React.PureComponent {
         this.props.doLogin();
       } else if(result) this.props.doLogin();
     });
+
+    document.addEventListener('click', () => this.closeVolume());
   }
 
   componentWillUnmount() {
@@ -289,6 +294,35 @@ class Root extends React.PureComponent {
     else return this.next();
   }
 
+  setVolume(ev) {
+    let container = ev.target;
+    while(!container.classList.contains('volume-bar')) container = container.parentNode;
+    const volume = (ev.clientX - container.getBoundingClientRect().x) / container.offsetWidth;
+    console.log(volume);
+    const audio = this.audio.current;
+    audio.volume = volume;
+  }
+
+  updateVolume() {
+    const audio = this.audio.current;
+    this.setState({ volume: audio.volume });
+  }
+
+  toggleVolume() {
+    this.setState({ volumeShown: !this.state.volumeShown });
+  }
+
+  blocker(ev) {
+    console.log('block');
+    ev.stopPropagation();
+    ev.nativeEvent.stopImmediatePropagation();
+  }
+
+  closeVolume() {
+    console.log('close');
+    this.setState({ volumeShown: false });
+  }
+
   render() {
     const {
       playing,
@@ -307,6 +341,8 @@ class Root extends React.PureComponent {
       paused,
       noauth,
       artwork: art,
+      volume,
+      volumeShown,
     } = this.state;
 
     return (
@@ -367,6 +403,14 @@ class Root extends React.PureComponent {
               </div>
             </div>
             <div className="spanner"></div>
+            <div className={volumeShown ? 'volume-shown volume' : 'volume'} onClick={this.blocker}>
+              <Icon onClick={() => this.toggleVolume()}>volume_up</Icon>
+              <div className="volume-bar" onClick={ev => this.setVolume(ev)}>
+                <div className="volume-inner" style={{
+                  transform: `translateX(-${(1 - volume) * 100}%)`,
+                }}></div>
+              </div>
+            </div>
             <div className="actions">
               { login ? 
                   <React.Fragment>
@@ -386,6 +430,7 @@ class Root extends React.PureComponent {
               <audio
                 ref={this.audio}
                 onTimeUpdate={() => this.updateProgress()}
+                onVolumeChange={() => this.updateVolume()}
                 onPause={() => this.setState({ paused: true })}
                 onPlay={() => this.setState({ paused: false })}
                 onEnded={() => this.onEnded()}

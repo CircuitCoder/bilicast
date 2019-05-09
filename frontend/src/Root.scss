@@ -185,6 +185,45 @@
       margin: 2.5px 0;
     }
   }
+
+  .volume {
+    display: flex;
+    align-items: center;
+    transform: translateX($volume-width + 20px);
+    transition: transform .2s ease;
+
+    .material-icons {
+      @extend %action-icon;
+    }
+
+    .volume-bar {
+      opacity: 0;
+      pointer-event: none;
+      width: $volume-width;
+      height: 5px;
+      background: lighten(grayscale($primary), 20%);
+      margin-left: 10px;
+      margin-right: 10px;
+      overflow: hidden;
+      cursor: pointer;
+
+      transition: opacity .2s ease;
+
+      .volume-inner {
+        width: $volume-width;
+        height: 100%;
+        background: $primary;
+      }
+    }
+
+    &.volume-shown {
+      transform: none;
+      .volume-bar {
+        opacity: 1;
+        pointer-event: all;
+      }
+    }
+  }
 }
 
 /* Shared */
