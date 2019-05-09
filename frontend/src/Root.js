@@ -26,7 +26,11 @@ const SCROLL_VOLUME_FACTOR = 0.001;
 
 function findNext({ playing: { list: { entries }, index }, repeating }) {
   if((repeating === null || repeating === 'SINGLE') && index === entries.length - 1) return null;
-  if(repeating === 'SHUFFLE') return -1;
+  if(repeating === 'SHUFFLE') {
+    if(entries.length > 1)
+      return -1;
+    return null;
+  }
   return (index + 1) % entries.length;
 }
 
