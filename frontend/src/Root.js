@@ -302,6 +302,13 @@ class Root extends React.PureComponent {
     else return this.next();
   }
 
+  getVolumeIcon() {
+    const { volume } = this.state;
+    if(volume === 0) return 'volume_mute';
+    if(volume < 0.5) return 'volume_down';
+    return 'volume_up';
+  }
+
   setVolume(ev) {
     let container = ev.target;
     while(!container.classList.contains('volume-bar')) container = container.parentNode;
@@ -420,7 +427,7 @@ class Root extends React.PureComponent {
             </div>
             <div className="spanner"></div>
             <div className={volumeShown ? 'volume-shown volume' : 'volume'} onClick={this.blocker} onWheel={ev => this.scrollVolume(ev)}>
-              <Icon onClick={() => this.toggleVolume()}>volume_up</Icon>
+              <Icon onClick={() => this.toggleVolume()}>{this.getVolumeIcon()}</Icon>
               <div className="volume-anchor">
                 <div className="volume-text">
                   { Math.round(volume * 100) }
