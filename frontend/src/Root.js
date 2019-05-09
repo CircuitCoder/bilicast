@@ -20,6 +20,10 @@ import {
 
 import './Root.scss';
 
+// 1000px for 1.
+// Yypical desktop browser interprete one scrollwheel movement as 100px, so 10 movements to scroll from 0 upto full
+const SCROLL_VOLUME_FACTOR = 0.001;
+
 function findNext({ playing: { list: { entries }, index }, repeating }) {
   if((repeating === null || repeating === 'SINGLE') && index === entries.length - 1) return null;
   if(repeating === 'SHUFFLE') return -1;
@@ -313,14 +317,22 @@ class Root extends React.PureComponent {
   }
 
   blocker(ev) {
-    console.log('block');
     ev.stopPropagation();
     ev.nativeEvent.stopImmediatePropagation();
   }
 
   closeVolume() {
-    console.log('close');
     this.setState({ volumeShown: false });
+  }
+
+  scrollVolume(ev) {
+    // Negate deltaY so scrolling down actually decrease the volume
+    const diff = - ev.deltaY * SCROLL_VOLUME_FACTOR;
+    const final = this.state.volume + diff;
+    const audio = this.audio.current;
+    if(final < 0) audio.volume = 0;
+    else if(final > 1) audio.volume = 1;
+    else audio.volume = final;
   }
 
   render() {
@@ -403,7 +415,7 @@ class Root extends React.PureComponent {
               </div>
             </div>
             <div className="spanner"></div>
-            <div className={volumeShown ? 'volume-shown volume' : 'volume'} onClick={this.blocker}>
+            <div className={volumeShown ? 'volume-shown volume' : 'volume'} onClick={this.blocker} onWheel={ev => this.scrollVolume(ev)}>
               <Icon onClick={() => this.toggleVolume()}>volume_up</Icon>
               <div className="volume-anchor">
                 <div className="volume-text">

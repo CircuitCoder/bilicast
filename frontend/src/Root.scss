@@ -147,6 +147,7 @@
       &.dash-hidden {
         transform: translateX(- $volume-width - 20px);
         opacity: 0;
+        pointer-events: none;
       }
     }
 
