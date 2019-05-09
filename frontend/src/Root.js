@@ -406,6 +406,9 @@ class Root extends React.PureComponent {
             <div className={volumeShown ? 'volume-shown volume' : 'volume'} onClick={this.blocker}>
               <Icon onClick={() => this.toggleVolume()}>volume_up</Icon>
               <div className="volume-anchor">
+                <div className="volume-text">
+                  { Math.round(volume * 100) }
+                </div>
                 <div className="volume-bar" onClick={ev => this.setVolume(ev)}>
                   <div className="volume-inner" style={{
                     transform: `translateX(-${(1 - volume) * 100}%)`,

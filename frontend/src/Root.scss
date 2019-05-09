@@ -1,6 +1,14 @@
 @import './const.scss';
 @import './shared.scss';
 
+%floating-text {
+  font-size: 10px;
+  line-height: $floating-text-height;
+  text-align: center;
+  font-family: "Roboto Mono";
+  color: rgba(0,0,0,.38);
+}
+
 .frame {
   padding: 20px 40px;
   padding-bottom: $bottom-height + 20px;
@@ -143,11 +151,7 @@
     }
 
     .timer {
-      font-size: 10px;
-      line-height: 14px;
-      text-align: center;
-      font-family: "Roboto Mono";
-      color: rgba(0,0,0,.38);
+      @extend %floating-text;
     }
 
     .control {
@@ -213,13 +217,20 @@
       opacity: 0;
       transition: opacity .2s ease;
 
-      padding: 0 10px;
+      padding: 0 10px ($floating-text-height + 2px) 10px;
+      box-sizing: border-box;
 
       display: flex;
       width: $volume-width + 20px;
-      align-items: center;
+      flex-direction: column;
+      justify-content: center;
 
       pointer-events: none;
+    }
+
+    .volume-text {
+      @extend %floating-text;
+      margin-bottom: 2px;
     }
 
     .volume-bar {
