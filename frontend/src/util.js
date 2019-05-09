@@ -127,6 +127,20 @@ export async function unauth() {
   await db.transaction('persistent', 'readwrite').objectStore('persistent').delete('passphrase');
 }
 
+export async function persistVolume(vol) {
+  const db = await dbPromise;
+  if(!db) return false;
+  await db.transaction('persistent', 'readwrite').objectStore('persistent').put(vol, 'volume');
+}
+
+export async function loadVolume(vol) {
+  const db = await dbPromise;
+  if(!db) return false;
+  const result = await db.transaction('persistent', 'readwrite').objectStore('persistent').get('volume');
+  if(Number.isFinite(result)) return result;
+  return null;
+}
+
 function storeTmpl(target) {
   return async (id, content) => {
     const cache = await cachePromise;

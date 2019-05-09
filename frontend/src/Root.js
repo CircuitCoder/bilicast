@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Route, Switch, NavLink } from 'react-router-do
 
 import { setRepeat, playEntry, fetchEntry, login, logout } from './store/actions';
 
-import { artwork, music, savedAuth, unauth } from './util';
+import { artwork, music, savedAuth, unauth, persistVolume, loadVolume } from './util';
 
 import Icon from './Icon';
 
@@ -99,7 +99,7 @@ const mapD2P = dispatch => ({
 class Root extends React.PureComponent {
   state = {
     progress: 0,
-    volume: 0.5,
+    volume: 1,
     phantomProgress: 0,
     timer: 'Loading...',
     paused: false,
@@ -114,6 +114,10 @@ class Root extends React.PureComponent {
     super(props);
 
     this.audio = React.createRef();
+
+    loadVolume().then(vol => {
+      if(vol !== null) this.setState({ volume: vol });
+    });
   }
 
   componentDidMount() {
@@ -321,6 +325,7 @@ class Root extends React.PureComponent {
   updateVolume() {
     const audio = this.audio.current;
     this.setState({ volume: audio.volume });
+    persistVolume(audio.volume); // Fire and forget
   }
 
   toggleVolume() {
