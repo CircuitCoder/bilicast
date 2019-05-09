@@ -114,6 +114,7 @@ class Root extends React.PureComponent {
     super(props);
 
     this.audio = React.createRef();
+    this.volume = React.createRef();
 
     loadVolume().then(vol => {
       if(vol !== null) this.setState({ volume: vol });
@@ -143,10 +144,15 @@ class Root extends React.PureComponent {
     });
 
     document.addEventListener('click', () => this.closeVolume());
+
+    const volumeScrollListener = ev => this.scrollVolume(ev);
+    this.volume.current.addEventListener('wheel', volumeScrollListener, { passive: false });
+    this.volumeScrollListener = volumeScrollListener;
   }
 
   componentWillUnmount() {
     console.log('unmount');
+    this.volume.current.removeEventListener('wheel', this.volumeScrollListener);
   }
 
   setupPrevHandler() {
@@ -333,8 +339,15 @@ class Root extends React.PureComponent {
   }
 
   blocker(ev) {
-    ev.stopPropagation();
-    ev.nativeEvent.stopImmediatePropagation();
+    if(ev.nativeEvent) {
+      ev.stopPropagation();
+      ev.nativeEvent.stopImmediatePropagation();
+      ev.preventDefault();
+      ev.nativeEvent.preventDefault();
+    } else {
+      ev.stopImmediatePropagation();
+      ev.preventDefault();
+    }
   }
 
   closeVolume() {
@@ -349,6 +362,8 @@ class Root extends React.PureComponent {
     if(final < 0) audio.volume = 0;
     else if(final > 1) audio.volume = 1;
     else audio.volume = final;
+
+    this.blocker(ev);
   }
 
   render() {
@@ -431,7 +446,7 @@ class Root extends React.PureComponent {
               </div>
             </div>
             <div className="spanner"></div>
-            <div className={volumeShown ? 'volume-shown volume' : 'volume'} onClick={this.blocker} onWheel={ev => this.scrollVolume(ev)}>
+            <div className={volumeShown ? 'volume-shown volume' : 'volume'} onClick={this.blocker} ref={this.volume}>
               <Icon onClick={() => this.toggleVolume()}>{this.getVolumeIcon()}</Icon>
               <div className="volume-anchor">
                 <div className="volume-text">

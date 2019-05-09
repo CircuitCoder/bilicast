@@ -203,6 +203,7 @@
     display: flex;
     align-items: center;
     transition: transform .2s ease;
+    margin-right: 10px;
 
     .material-icons {
       @extend %action-icon;
