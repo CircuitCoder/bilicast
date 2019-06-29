@@ -23,18 +23,20 @@ router.post('/', authMiddleware, async ctx => {
 
 router.get('/:id', async ctx => {
   const list = await List.findById(ctx.params.id).lean();
-  list.entries.reverse();
   return ctx.body = list;
 });
 
 router.post('/:id/entries', authMiddleware, async ctx => {
-  const resp = await List.findOneAndUpdate({
-    _id: ctx.params.id,
-  }, {
-    $addToSet: { entries: { $each: ctx.request.body } },
-  }).lean();
-  if(resp) return ctx.status = 204;
-  else return ctx.status = 404;
+  for(const row of ctx.request.body) {
+    await List.findOneAndUpdate({
+      _id: ctx.params.id,
+      entries: row,
+    }, {
+      $addToSet: { entries: row },
+    })
+  }
+
+  return ctx.status = 204;
 });
 
 // TODO: support multiple entries?

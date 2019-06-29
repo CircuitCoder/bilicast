@@ -548,13 +548,25 @@ class List extends React.PureComponent {
       </div>
 
     const prefetchingIcon = prefetchingList || list.entries.some(e => prefetching.has(e));
-    let prefetchBtn = <Icon onClick={() => this.prefetchList()}>get_app</Icon>;
-    if(prefetchingIcon) prefetchBtn = <Icon className="disabled rotate">sync</Icon>;
-    else if(list.entries.length === 0) prefetchBtn = null;
-    else if(list.cached && list.entries.every(e => {
+    let downloadBtn = <Icon onClick={() => this.prefetchList()}>get_app</Icon>;
+    let prefetchBtn = <Icon onClick={() => this.reloadList(true)}>sync</Icon>;
+
+    if(this.state.loading || prefetchingList) {
+      prefetchBtn = <Icon className="disabled rotate">sync</Icon>;
+    } else if(list.entries.length === 0) {
+      prefetchBtn = null;
+    }
+
+    if(prefetchingIcon) {
+      downloadBtn = null;
+    } else if(list.entries.length === 0) {
+      downloadBtn = null;
+    } else if(list.cached && list.entries.every(e => {
       let inst = store.get(e);
       return !inst || inst.cached;
-    })) prefetchBtn = <Icon onClick={() => this.reloadList(true)}>sync</Icon>;
+    })) {
+      downloadBtn = null;
+    }
 
     let className = 'list';
     if(updating) className += ' updating';
@@ -574,6 +586,7 @@ class List extends React.PureComponent {
               </React.Fragment>
               : null }
               
+          { downloadBtn }
           { prefetchBtn }
           { list.entries.map(e => store.get(e)).find(e => e && e.status === 'ready') !== undefined ?
               <Icon className="primary" onClick={() => this.playList()}>play_arrow</Icon> : null }
