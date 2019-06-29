@@ -20,7 +20,7 @@ async function createEntries(av) {
   const descs = await util.getDesc(av);
   const single = descs.length === 1;
   const results = await Promise.all(descs.map((e, i) => {
-    const titleSegs = e.title.split(` #${i+1}. `);
+    const titleSegs = e.title.split(` (P${i+1}. `);
     return Entry.findOneAndUpdate({
       source: av,
       page: i+1,
@@ -29,7 +29,7 @@ async function createEntries(av) {
         dlTime: new Date().toISOString(),
         status: 'preparing',
         title: titleSegs[0],
-        subtitle: titleSegs[1],
+        subtitle: titleSegs[1] ? titleSegs[1].slice(0, titleSegs[1].length-1) : null,
         ref: e.url,
 
         desc: descs[i],
