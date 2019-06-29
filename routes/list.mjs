@@ -27,12 +27,17 @@ router.get('/:id', async ctx => {
 });
 
 router.post('/:id/entries', authMiddleware, async ctx => {
-  for(const row of ctx.request.body) {
+  const list = [...ctx.request.body];
+  list.reverse();
+  for(const row of list) {
     await List.findOneAndUpdate({
       _id: ctx.params.id,
       entries: { $ne: row },
     }, {
-      $addToSet: { entries: row },
+      $push: { entries: {
+        $each: [row],
+        $position: 0,
+      }},
     })
   }
 
