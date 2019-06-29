@@ -115,10 +115,6 @@ class Root extends React.PureComponent {
 
     this.audio = React.createRef();
     this.volume = React.createRef();
-
-    loadVolume().then(vol => {
-      if(vol !== null) this.setState({ volume: vol });
-    });
   }
 
   componentDidMount() {
@@ -148,6 +144,13 @@ class Root extends React.PureComponent {
     const volumeScrollListener = ev => this.scrollVolume(ev);
     this.volume.current.addEventListener('wheel', volumeScrollListener, { passive: false });
     this.volumeScrollListener = volumeScrollListener;
+
+    loadVolume().then(vol => {
+      if(vol !== null) {
+        this.setState({ volume: vol });
+        if(this.audio.current) this.audio.current.volume = vol;
+      }
+    });
   }
 
   componentWillUnmount() {
