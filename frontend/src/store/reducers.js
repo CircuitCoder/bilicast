@@ -15,6 +15,8 @@ export function playing(state = null, action) {
 export function store(state = new Map(), action) {
   if(action.type === TYPES.CACHE_ENTRY)
     return state.set(action.entry._id, action.entry);
+  else if(action.type === TYPES.UNCACHE_ENTRY)
+    return state.remove(action.id);
   return state;
 }
 

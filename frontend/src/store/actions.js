@@ -2,6 +2,7 @@ import { get, artwork, storeArtwork, music, storeMusic, storeEntry, matchEntry }
 
 export const TYPES = {
   CACHE_ENTRY: 'CACHE_ENTRY',
+  UNCACHE_ENTRY: 'UNCACHE_ENTRY',
   PLAY_ENTRY: 'PLAY_ENTRY',
   SET_REPEAT: 'SET_REPEAT',
   LOGIN: 'LOGIN',
@@ -21,6 +22,11 @@ Object.freeze(TYPES);
 export const cacheEntry = entry => ({
   type: TYPES.CACHE_ENTRY,
   entry,
+});
+
+export const uncacheEntry = id => ({
+  type: TYPES.UNCACHE_ENTRY,
+  id,
 });
 
 export const playEntry = (list, index) => ({

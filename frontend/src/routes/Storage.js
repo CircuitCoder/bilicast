@@ -1,10 +1,14 @@
 import React from 'react';
 
+import { connect } from 'react-redux';
+
 import Icon from '../Icon';
 
 import { NavLink } from 'react-router-dom';
 
 import { storeStat, formatSize, deleteEntry } from '../util';
+
+import { uncacheEntry } from '../store/actions';
 
 class Storage extends React.PureComponent {
   state = {
@@ -26,6 +30,7 @@ class Storage extends React.PureComponent {
 
   async deleteEntry(id) {
     await deleteEntry(id);
+    this.props.uncache(id);
     await this.reloadStat();
   }
 
@@ -70,4 +75,8 @@ class Storage extends React.PureComponent {
   }
 }
 
-export default Storage;
+const mapD2P = dispatch => ({
+  uncache: id => dispatch(uncacheEntry(id)),
+});
+
+export default connect(null, mapD2P)(Storage);
