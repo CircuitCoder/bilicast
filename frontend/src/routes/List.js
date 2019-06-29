@@ -180,7 +180,6 @@ function parseTarget(target) {
   const longYtbUri = /^https?:\/\/(www\.)?youtube\.com\/watch\?v=(.*)$/;
   const shortYtbUri = /^https?:\/\/(www\.)?youtu\.be\/(.*)($|\?)/;
   const longYtbMatch = target.match(longYtbUri);
-  console.log(longYtbMatch);
   if(longYtbMatch) return longYtbMatch[2];
   const shortYtbMatch = target.match(shortYtbUri);
   if(shortYtbMatch) return shortYtbMatch[2];
