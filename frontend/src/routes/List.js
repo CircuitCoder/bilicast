@@ -281,17 +281,18 @@ class List extends React.PureComponent {
         list = await get(`/list/${id}`);
       } catch(e) {}
 
-    if(set)
-      this.setState({ list, loading: false });
-
     if(list) {
       this.props.requeueRecent(list.name);
 
       if(update) {
         await storeList(id, list);
         list.cached = true;
+        console.log('Cached');
       }
     }
+
+    if(set)
+      this.setState({ list, loading: false });
 
     return list;
   }
@@ -557,12 +558,15 @@ class List extends React.PureComponent {
       prefetchBtn = null;
     }
 
+    console.log(list);
+
     if(prefetchingIcon) {
       downloadBtn = null;
     } else if(list.entries.length === 0) {
       downloadBtn = null;
     } else if(list.cached && list.entries.every(e => {
       let inst = store.get(e);
+      if(inst && !inst.cached) console.log(inst);
       return !inst || inst.cached;
     })) {
       downloadBtn = null;
