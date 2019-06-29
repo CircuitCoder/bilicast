@@ -3,7 +3,6 @@ import fs from 'fs';
 import crypto from 'crypto';
 import path from 'path';
 import { promisify } from 'util';
-import request from 'request';
 
 const access = promisify(fs.access);
 const mkdir = promisify(fs.mkdir);
@@ -79,7 +78,7 @@ async function download(av, dbid, desc, status = 'preparing') {
     logger.debug(detail);
 
     await new Promise(resolve => 
-      request(detail.thumb)
+      detail.thumb
         .on('end', resolve)
         .pipe(fs.createWriteStream(path.join(container, 'art.jpg'))) // TODO: other ext
     );
@@ -99,10 +98,11 @@ async function download(av, dbid, desc, status = 'preparing') {
 
   if(STAGES[status] <= STAGES.downloading) {
     // Selecting best source
-    const source = Object.keys(desc.streams).reduce((acc, i) => {
-      if(!['flv', 'mp4'].includes(desc.streams[i].container)) return acc;
-      if(acc === null) return { format: i, ...desc.streams[i] };
-      if(desc.streams[i].size > acc.size) return { format: i, ...desc.streams[i] };
+    const streams = { ...desc.streams, ...desc.dash_streams };
+    const source = Object.keys(streams).reduce((acc, i) => {
+      if(!['flv', 'mp4'].includes(streams[i].container)) return acc;
+      if(acc === null) return { format: i, ...streams[i] };
+      if(streams[i].size > acc.size) return { format: i, ...streams[i] };
       return acc;
     }, null);
 
@@ -203,7 +203,9 @@ router.get('/download/:av', util.authMiddleware, async ctx => {
 });
 
 router.get('/:id', async ctx => {
-  return ctx.body = await Entry.findById(ctx.params.id);
+  const entry = await Entry.findById(ctx.params.id);
+  if(entry) return ctx.body = entry;
+  else return ctx.status = 404;
 });
 
 export default router;

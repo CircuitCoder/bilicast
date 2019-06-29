@@ -30,7 +30,7 @@ router.post('/:id/entries', authMiddleware, async ctx => {
   for(const row of ctx.request.body) {
     await List.findOneAndUpdate({
       _id: ctx.params.id,
-      entries: row,
+      entries: { $ne: row },
     }, {
       $addToSet: { entries: row },
     })
