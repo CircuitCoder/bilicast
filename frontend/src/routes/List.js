@@ -490,16 +490,31 @@ class List extends React.PureComponent {
       return `translateY(-${ENTRY_HEIGHT}px)`
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    for(const k in nextState)
+      if(nextState[k] !== this.state[k])
+        return true;
+
+    for(const k in nextProps)
+      if(nextProps[k] !== this.props[k]) {
+        if(typeof nextProps[k] === 'function') continue;
+        if(k === 'match') {
+          if(nextProps.match.params.id !== this.props.match.params.id)
+            return true;
+        } else return true;
+      }
+
+    return false;
+  }
+
   render() {
     const {
       isPlaying,
       playingIndex,
       store,
-      prefetchEntry,
       login,
       prefetching,
       canInstall,
-      doInstall,
     } = this.props;
 
     const {
@@ -526,7 +541,7 @@ class List extends React.PureComponent {
     const navRegion = <React.Fragment>
       { canInstall ? 
           <div className="actions">
-            <Icon onClick={doInstall}>widgets</Icon>
+            <Icon onClick={() => this.props.doInstall}>widgets</Icon>
           </div>
           : null }
       <NavLink to="/">
@@ -546,6 +561,7 @@ class List extends React.PureComponent {
       return <div className="list">
         <div className="title">
           <div className="title-content"></div>
+          B
           <div className="actions">
             { navRegion }
           </div>
@@ -612,7 +628,7 @@ class List extends React.PureComponent {
           style={this.getEntryStyles(i)}
           onPlay={() => this.playIndex(i)}
           onDelete={() => this.deleteEntry(e)}
-          onCache={() => prefetchEntry(e)}
+          onCache={() => this.props.prefetchEntry(e)}
           isActive={isPlaying && playingIndex === i}
           onArtDrag={ev => this.startMove(i, ev)}
         />)}
