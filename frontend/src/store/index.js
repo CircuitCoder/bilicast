@@ -32,11 +32,13 @@ store.subscribe(() => {
       document.title = `${title} | ${state.playing.list.name} | Bilicast`;
 
       if('mediaSession' in navigator)
-        navigator.mediaSession.metadata = new window.MediaMetadata({
-          title,
-          artist: inst.uploader,
-          album: state.playing.list.name,
-          artwork: [{ src: artwork(id) }],
+        artwork(id).then(art => {
+          navigator.mediaSession.metadata = new window.MediaMetadata({
+            title,
+            artist: inst.uploader,
+            album: state.playing.list.name,
+            artwork: [{ sizes: '140x100', src: art }],
+          });
         });
       return;
     }
