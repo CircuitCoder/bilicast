@@ -93,7 +93,6 @@ async function fetchEntryImpl(dispatch, eid, prefetch) {
 
   let entry = null;
   if(!prefetch) {
-    console.log(matchEntry);
     entry = await matchEntry(eid);
     if(entry) entry.cached = true;
   }
