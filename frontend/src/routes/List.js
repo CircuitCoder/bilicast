@@ -602,8 +602,6 @@ class List extends React.PureComponent {
       prefetchBtn = null;
     }
 
-    console.log(list);
-
     if(prefetchingIcon) {
       downloadBtn = null;
     } else if(list.entries.length === 0) {
