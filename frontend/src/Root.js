@@ -77,6 +77,7 @@ const mapS2P = state => {
   const playingEntry = state.playing ? state.playing.list.entries[state.playing.index] : null;
   return {
     playing: state.playing,
+    playingList: state.playing ? state.playing.list._id : null,
     playingEntry,
     playingEntryInst: playingEntry ? state.store.get(playingEntry) : null,
     repeating: state.repeating,
@@ -102,12 +103,14 @@ class Root extends React.PureComponent {
     volume: 1,
     phantomProgress: 0,
     timer: 'Loading...',
-    paused: false,
+    paused: true,
     noauth: false,
 
     artwork: null,
 
     volumeShown: false,
+
+    linkCopySuccess: false,
   }
 
   constructor(props) {
@@ -248,7 +251,13 @@ class Root extends React.PureComponent {
       this.setState({ timer: `${formatTimer(0, 0)}` });
     else
       this.setState({ timer: `${formatTimer(0, audio.duration)} - ${formatTimer(audio.duration, audio.duration)}` });
-    audio.play();
+
+    try {
+      audio.play();
+    } catch(e) {
+      // May happen if this entry is the initial entry (loaded through links)
+      console.error(e);
+    }
 
     // Load artwork
     this.setState({ artwork: null });
@@ -369,9 +378,19 @@ class Root extends React.PureComponent {
     this.blocker(ev);
   }
 
+  async copyLink() {
+    const link = `${window.location.origin}/${this.props.playingList}/${this.props.playingEntry}`;
+
+    await navigator.clipboard.writeText(link);
+
+    this.setState({ linkCopySuccess: true });
+    setTimeout(() => this.setState({ linkCopySuccess: false }), 1000);
+  }
+
   render() {
     const {
       playing,
+      playingList,
       repeating,
       setRepeat,
       playingEntryInst,
@@ -389,6 +408,7 @@ class Root extends React.PureComponent {
       artwork: art,
       volume,
       volumeShown,
+      linkCopySuccess,
     } = this.state;
 
     return (
@@ -400,7 +420,7 @@ class Root extends React.PureComponent {
               <Route exact path="/new" component={New} />
               <Route exact path="/login" component={Login} />
               <Route exact path="/storage" component={Storage} />
-              <Route exact path="/:id" component={List} />
+              <Route exact path="/:id/:init?" component={List} />
             </Switch>
           </div>
           <nav className="bottom">
@@ -417,7 +437,22 @@ class Root extends React.PureComponent {
                       { timer }
                     </div>
                     <div className="control">
-                      <NavLink to={`/${playing.list._id}`}><Icon>queue_music</Icon></NavLink>
+                      <Route render={({ location }) => {
+                        const inPlayingList = playingList && location.pathname === `/${playingList}`;
+                        return <div className="icon-box">
+                          <NavLink
+                            to={`/${playing.list._id}`}
+                            className={ inPlayingList ? 'icon-box-hidden' : '' }
+                          ><Icon>queue_music</Icon></NavLink>
+                          <Icon
+                            onClick={() => this.copyLink()}
+                            className={ inPlayingList && !linkCopySuccess ? '' : 'icon-box-hidden' }
+                          >link</Icon>
+                          <Icon
+                            className={ inPlayingList && linkCopySuccess ? '' : 'icon-box-hidden' }
+                          >done</Icon>
+                        </div>;
+                      }}/>
                       <div className="spacer"></div>
                       <Icon onClick={() => this.prev()} className={prev === null ? 'disabled' : ''}>skip_previous</Icon>
                       { paused ? 

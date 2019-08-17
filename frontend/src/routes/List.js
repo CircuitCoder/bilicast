@@ -24,7 +24,7 @@ const FAST_SCROLL_ZONE_WIDTH = 75;
 const SCROLL_SPEED = 5;
 const FAST_SCROLL_SPEED = 10;
 
-class EntryImpl extends React.PureComponent {
+class EntryImpl extends React.Component {
   state = {
     lifted: false,
     artwork: null,
@@ -200,6 +200,8 @@ function parseFavlist(url) {
 }
 
 class List extends React.PureComponent {
+  static initial = null
+
   state = {
     loading: false,
     list: null,
@@ -222,6 +224,12 @@ class List extends React.PureComponent {
 
   constructor(props) {
     super(props);
+
+    if(props.match.params.init) {
+      console.log('Setting initial...');
+      List.initial = props.match.params.init;
+      props.history.replace(`/${props.match.params.id}`);
+    }
 
     this.reloadList();
     this.scrolling = null;
@@ -246,8 +254,6 @@ class List extends React.PureComponent {
     this.scrollListener = ev => {
       this.recalcMovingTarget();
     };
-
-    console.log('listen');
 
     window.addEventListener('mousemove', this.moveListener);
     window.addEventListener('mouseup', this.upListener);
@@ -299,8 +305,22 @@ class List extends React.PureComponent {
       }
     }
 
-    if(set)
+    if(set) {
       this.setState({ list, loading: false });
+
+      if(List.initial) {
+        // Find initial in list
+        const index = list.entries.findIndex(e => e === List.initial);
+
+        if(index >= 0) {
+          // Fetch entry first
+          await this.props.fetchEntry(List.initial);
+          this.playIndex(index);
+        }
+
+        List.initial = false;
+      }
+    }
 
     return list;
   }
@@ -700,6 +720,7 @@ const mapS2P = (state, props) => ({
 const mapD2P = (dispatch, props) => ({
   play: (list, index) => dispatch(playEntry(list, index)),
   prefetchEntry: id => dispatch(prefetchEntry(id)),
+  fetchEntry: id => dispatch(fetchEntry(id)),
   requeueRecent: name => dispatch(queueRecent(props.match.params.id, name)),
   doInstall: () => dispatch(install()),
 });

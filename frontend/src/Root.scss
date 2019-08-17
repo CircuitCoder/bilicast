@@ -604,3 +604,37 @@
     }
   }
 }
+
+/* Bottom bar icon-box */
+
+.icon-box {
+  width: 32px;
+  height: 32px;
+  position: relative;
+
+  & > * {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    opacity: 1;
+    transition-property: opacity;
+    transition-timing-function: ease-out;
+    transition-duration: .2s;
+    transition-delay: 0s;
+    z-index: 1;
+
+    &.icon-box-hidden {
+      opacity: 0;
+      pointer-events: none;
+      z-index: 0;
+      transition-timing-function: ease-in;
+
+      .bottom .playing .control & {
+        opacity: 0;
+      }
+    }
+  }
+}

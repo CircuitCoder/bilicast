@@ -75,53 +75,58 @@ export const setInstaller = installer => ({
 });
 
 // Async actions
-const fetchQueue = new Set();
+const fetchQueue = new Map();
 const POLL_INTERVAL = 1000;
 let polling = false;
 
+async function fetchEntryImpl(dispatch, eid, prefetch) {
+  if(prefetch) {
+    dispatch(prefetchStarted(eid));
+    const artStore = artwork(eid)
+      .then(url => get(url))
+      .then(blob => storeArtwork(eid, blob));
+    const contentStore = music(eid)
+      .then(url => get(url))
+      .then(blob => storeMusic(eid, blob));
+    await Promise.all([artStore, contentStore]);
+  }
+
+  let entry = null;
+  if(!prefetch) {
+    console.log(matchEntry);
+    entry = await matchEntry(eid);
+    if(entry) entry.cached = true;
+  }
+
+  if(entry === null)
+    entry = await get(`/entry/${eid}`);
+
+  dispatch(cacheEntry(entry));
+  fetchQueue.delete(eid);
+
+  if(entry.status !== 'ready' && !polling)
+    setTimeout(() => dispatch(pollEntry()), POLL_INTERVAL);
+
+  if(prefetch) {
+    if(entry) {
+      await storeEntry(eid, entry);
+      entry.cached = true;
+    }
+    dispatch(prefetchFinished(eid));
+  }
+
+  return entry;
+}
+
 export const fetchEntry = (eid, prefetch = false) =>
-  async dispatch => {
-    if(fetchQueue.has(eid)) return;
+  dispatch => {
+    if(fetchQueue.has(eid)) return fetchQueue.get(eid);
 
-    fetchQueue.add(eid);
-
-    if(prefetch) {
-      dispatch(prefetchStarted(eid));
-      const artStore = artwork(eid)
-        .then(url => get(url))
-        .then(blob => storeArtwork(eid, blob));
-      const contentStore = music(eid)
-        .then(url => get(url))
-        .then(blob => storeMusic(eid, blob));
-      await Promise.all([artStore, contentStore]);
-    }
-
-    let entry = null;
-    if(!prefetch) {
-      console.log(matchEntry);
-      entry = await matchEntry(eid);
-      if(entry) entry.cached = true;
-    }
-
-    if(entry === null)
-      entry = await get(`/entry/${eid}`);
-
-    dispatch(cacheEntry(entry));
-    fetchQueue.delete(eid);
-
-    if(entry.status !== 'ready' && !polling)
-      setTimeout(() => dispatch(pollEntry()), POLL_INTERVAL);
-
-    if(prefetch) {
-      if(entry) {
-        await storeEntry(eid, entry);
-        entry.cached = true;
-      }
-      dispatch(prefetchFinished(eid));
-    }
-
-    return entry;
+    const promise = fetchEntryImpl(dispatch, eid, prefetch);
+    fetchQueue.set(eid, promise);
+    return promise;
   };
+
 
 const pollEntry = () =>
   async (dispatch, getState) => {
