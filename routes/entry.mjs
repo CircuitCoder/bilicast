@@ -101,6 +101,7 @@ async function download(av, dbid, desc, status = 'preparing') {
     const streams = { ...desc.streams, ...desc.dash_streams };
     const source = Object.keys(streams).reduce((acc, i) => {
       if(!['flv', 'mp4'].includes(streams[i].container)) return acc;
+      if(!streams[i].size) return acc;
       if(acc === null) return { format: i, ...streams[i] };
       if(streams[i].size > acc.size) return { format: i, ...streams[i] };
       return acc;
