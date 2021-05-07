@@ -14,7 +14,7 @@
     "koa-mount": "^4.0.0",
     "koa-router": "^7.4.0",
     "koa-static": "^5.0.0",
-    "mongoose": "^5.3.14",
+    "mongoose": "^5.7.5",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.5",
     "socks-proxy-agent": "^4.0.2",
