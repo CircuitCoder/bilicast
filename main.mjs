@@ -8,7 +8,7 @@ import Mount from 'koa-mount';
 import Bodyparser from 'koa-bodyparser';
 import CORS from '@koa/cors';
 
-import router from './routes';
+import router from './routes/index.mjs';
 
 const dburi = process.env.DBURI || 'mongodb://localhost/bilicast';
 mongoose.connect(dburi, { useNewUrlParser: true });

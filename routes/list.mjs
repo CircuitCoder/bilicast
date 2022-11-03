@@ -5,9 +5,9 @@ import Router from 'koa-router';
 
 const randomBytes = util.promisify(crypto.randomBytes);
 
-import List from '../db/List';
+import List from '../db/List.mjs';
 
-import { authMiddleware } from '../util';
+import { authMiddleware } from '../util.mjs';
 
 const router = new Router();
 

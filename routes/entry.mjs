@@ -8,9 +8,9 @@ const access = promisify(fs.access);
 const mkdir = promisify(fs.mkdir);
 const randomBytes = promisify(crypto.randomBytes);
 
-import Entry from '../db/Entry';
-import logger from '../logger';
-import * as util from '../util';
+import Entry from '../db/Entry.mjs';
+import logger from '../logger.mjs';
+import * as util from '../util.mjs';
 
 const basedir = path.dirname(new URL(import.meta.url).pathname);
 

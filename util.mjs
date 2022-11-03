@@ -13,9 +13,9 @@ const parseXML = promisify(xml2js.parseString);
 import SocksProxyAgent from 'socks-proxy-agent';
 import HttpProxyAgent from 'http-proxy-agent';
 
-import request from './request';
+import request from './request.js';
 
-import logger from './logger';
+import logger from './logger.mjs';
 
 const PASSPHRASE = process.env.PASSPHRASE;
 

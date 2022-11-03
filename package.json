@@ -22,7 +22,7 @@
     "xml2js": "^0.4.23"
   },
   "scripts": {
-    "start": "node --es-module-specifier-resolution=node --experimental-modules main.mjs",
+    "start": "node main.mjs",
     "drop": "rm -rf store/* && node --experimental-modules tools/drop.mjs"
   }
 }

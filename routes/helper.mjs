@@ -1,8 +1,8 @@
 import Router from 'koa-router';
 
-import request from '../request';
+import request from '../request.js';
 
-import { auth, authMiddleware } from '../util';
+import { auth, authMiddleware } from '../util.mjs';
 
 const router = new Router();
 

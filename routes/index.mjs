@@ -1,8 +1,8 @@
 import Router from 'koa-router';
 
-import entry from './entry';
-import list from './list';
-import helper from './helper';
+import entry from './entry.mjs';
+import list from './list.mjs';
+import helper from './helper.mjs';
 
 const router = new Router();
 
