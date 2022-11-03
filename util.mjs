@@ -199,7 +199,7 @@ export function getDesc(av) {
   const uri = getUri(av);
   logger.debug(`Getting desc from ${uri}`);
 
-  let args = ['--json'];
+  let args = ['--json', '-c', '/bilicast/cookies.txt'];
   if(supportsPlaylist(av)) args.push('--playlist');
   args = args.concat(getYouGetProxy(getType(av)));
 
@@ -245,7 +245,7 @@ export function getDesc(av) {
 export function downloadTo(url, format, path, av) {
   logger.debug(`Downloading ${url} @ ${format}`);
   logger.debug(`  => ${path}`);
-  const child = spawn('tmux', ['-L', 'bilicast', 'new', '-d', '-s', path, `you-get ${getYouGetProxy(getType(av)).join(' ')} -o ${path} -O raw --no-caption --format=${format} --auto-rename "${url}" && touch ${path}/done || sleep 10; tmux wait-for -S ${path}`, ';', 'wait-for', path]);
+  const child = spawn('tmux', ['-L', 'bilicast', 'new', '-d', '-s', path, `you-get ${getYouGetProxy(getType(av)).join(' ')} -o ${path} -O raw --no-caption --format=${format} --auto-rename "${url}" -c /bilicast/cookies.txt && touch ${path}/done || sleep 10; tmux wait-for -S ${path}`, ';', 'wait-for', path]);
 
   child.stdout.on('data', data => {
     logger.debug(data);
